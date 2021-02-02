@@ -103,14 +103,14 @@
 
                         
                         <li>
-                            <a href="/archives/">Archives</a>
+                            <a href="/tags/">Tags</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/tags/">Tags</a>
+                            <a href="/archives/">Archives</a>
                         </li>
                         
                     
@@ -198,7 +198,8 @@
             
         </h3>
         <div class="post-content-preview">
-            参数属性介绍1.核心线程数corePoolSize：核心线程数量。提交一个任务的时候，会对线程池里面的当前存活线程数和这个corePoolSize进行比较，不同情况会有不同的操作。2.最大线程数maximumPoolSize：线程池所能创建的线程的最大的数量。3.空闲线程的超时时间KeepAliveTime：如果线程池当前线程数是大于corePoolSize,并且这些线程中是有空闲线程的，也......
+            线程池的好处1.重用已经存在的线程，减少了线程的创建和销毁开销。2.可有效控制最大并发的线程数，提高了系统资源的使用率避免很多竞争，避免了OOM、死锁等。
+四种Java线程池功能及分析线程池都继承了ExecutorService的接口，所以他们都既有ExecutorService的生命周期方法：运行、关闭、终止。因为继承了ExecuterService接口，所以它在创建的时候就是处于运行状态......
         </div>
     </a>
     <p class="post-meta">
