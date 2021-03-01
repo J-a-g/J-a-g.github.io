@@ -92,6 +92,9 @@
                     
 
                         
+                    
+
+                        
                         <li>
                             <a href="/about/">About</a>
                         </li>
@@ -99,18 +102,15 @@
                     
 
                         
-                    
-
-                        
                         <li>
-                            <a href="/tags/">Tags</a>
+                            <a href="/archives/">Archives</a>
                         </li>
                         
                     
 
                         
                         <li>
-                            <a href="/archives/">Archives</a>
+                            <a href="/tags/">Tags</a>
                         </li>
                         
                     
@@ -234,7 +234,8 @@
 <p>创建一个ExecutorCallbackCall对象，参数分别对应前面的MainThreadExecutor，和动态代理的invoke方法中创建的okHttpCall由此可以知道，Call&lt;List<String>&gt; repos = service.listRepos(“octocat”);repos实际就是ExecutorCallbackCall对象。</p>
 <p><strong>调用repos.enqueue()方法</strong><br>开始请求接口实际是调用到了ExecutorCallbackCall的enqueue()方法中代码如下:</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">@Override public <span class="keyword">void</span> <span class="function"><span class="title">enqueue</span>(<span class="params">final Callback&lt;T&gt; callback</span>)</span> &#123;</span><br><span class="line">  checkNotNull(callback, <span class="string">&quot;callback == null&quot;</span>);</span><br><span class="line"></span><br><span class="line">  delegate.enqueue(<span class="keyword">new</span> Callback&lt;T&gt;() &#123;</span><br><span class="line">    @Override public <span class="keyword">void</span> <span class="function"><span class="title">onResponse</span>(<span class="params">Call&lt;T&gt; call, final Response&lt;T&gt; response</span>)</span> &#123;</span><br><span class="line">      callbackExecutor.execute(<span class="keyword">new</span> <span class="function"><span class="title">Runnable</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        @Override public <span class="keyword">void</span> <span class="function"><span class="title">run</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (delegate.isCanceled()) &#123;</span><br><span class="line">            <span class="comment">// Emulate OkHttp&#x27;s behavior of throwing/delivering an IOException on cancellation.</span></span><br><span class="line">            callback.onFailure(ExecutorCallbackCall.this, <span class="keyword">new</span> IOException(<span class="string">&quot;Canceled&quot;</span>));</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            callback.onResponse(ExecutorCallbackCall.this, response);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override public <span class="keyword">void</span> <span class="function"><span class="title">onFailure</span>(<span class="params">Call&lt;T&gt; call, final Throwable t</span>)</span> &#123;</span><br><span class="line">      callbackExecutor.execute(<span class="keyword">new</span> <span class="function"><span class="title">Runnable</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        @Override public <span class="keyword">void</span> <span class="function"><span class="title">run</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">          callback.onFailure(ExecutorCallbackCall.this, t);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>其中callbackExecutor为MainThreadExecutor，delegate为动态代理的invoke方法中创建的okHttpCall对象，所以是通过okHttpCall完成了网络请求并返回数据结果，并通过<br>callbackExecutor.execute（）将线程切换回主线程，并将数据结果回调给最外层的接口</p>
+<p>其中callbackExecutor为MainThreadExecutor，delegate为动态代理的invoke方法中创建的okHttpCall对象，所以是通过okHttpCall完成了网络请求并返回数据结果，并通过<br>callbackExecutor.execute（）将线程切换回主线程，并将数据结果回调给最外层的接口
+             </p>
 
 
                 <hr>
@@ -242,6 +243,10 @@
                 
 
                 <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2020/05/01/Fragment懒加载/" data-toggle="tooltip" data-placement="top" title="Fragment懒加载">&larr; Previous Post</a>
+                        </li>
                     
                     
                         <li class="next">
