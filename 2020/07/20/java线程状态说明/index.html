@@ -13,11 +13,11 @@
 
     <title>
         
-          如何搭建代理服务器 - JAG的博客 | JAG&#39;s Blog
+          java线程状态说明 - JAG的博客 | JAG&#39;s Blog
         
     </title>
 
-    <link rel="canonical" href="https://j-a-g.github.io/2020/06/10/如何搭建代理服务器/">
+    <link rel="canonical" href="https://j-a-g.github.io/2020/07/20/java线程状态说明/">
 
     <!-- Bootstrap Core CSS -->
     
@@ -171,16 +171,16 @@
                 <div class="post-heading">
                     <div class="tags">
                         
-                          <a class="tag" href="/tags/#代理" title="代理">代理</a>
+                          <a class="tag" href="/tags/#Java" title="Java">Java</a>
                         
-                          <a class="tag" href="/tags/#服务器" title="服务器">服务器</a>
+                          <a class="tag" href="/tags/#Android" title="Android">Android</a>
                         
                     </div>
-                    <h1>如何搭建代理服务器</h1>
+                    <h1>java线程状态说明</h1>
                     <h2 class="subheading"></h2>
                     <span class="meta">
                         Posted by Chengjian Su on
-                        2020-06-10
+                        2020-07-20
                     </span>
                 </div>
             </div>
@@ -199,15 +199,9 @@
                 col-md-10 col-md-offset-1
                 post-container">
 
-                <h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><blockquote>
-<p>这篇文章主要是介绍如何通过购买代理服务器，配置代理环境实现翻墙、访问外网的目的，如google.com</p>
-</blockquote>
-<p>先下载并安装两个软件</p>
-<p><img src="011.png" alt="java-javascript"><br><img src="012.png" alt="java-javascript"></p>
-<h2 id="如何购买代理IP专用服务器"><a href="#如何购买代理IP专用服务器" class="headerlink" title="如何购买代理IP专用服务器"></a>如何购买代理IP专用服务器</h2><p>这个推荐<a target="_blank" rel="noopener" href="https://www.vultr.com/">vultr</a>,这个平台上大概有10个国家的服务器可以选择，且稳定性还可以，官网如下：<br><img src="001.png" alt="java-javascript"><br>进入官网后注册自己的账号不详细说明，注册成功后，<code>记得一定要激活自己的邮箱</code>,否则无法正常购买和使用，激活按钮如下图：<br><img src="002.png" alt="java-javascript"><br>点击如下图按钮，选择服务器<br><img src="003.png" alt="java-javascript"><br>选择服务器配置如下图<br><img src="004.png" alt="java-javascript"><br><img src="005.png" alt="java-javascript"><br><img src="006.png" alt="java-javascript"><br>然后完成支付，每个月10美元<br><img src="007.png" alt="java-javascript"><br>完成后会显示如下图的一个实例<br><img src="008.png" alt="java-javascript"><br><strong>注意：完成一个实例的添加后，再选2个别的国家的服务器实例，后面新增的两个服务器不能另外支付，一次性选择3个的原因是为了后面我们可以选择一台延迟较低的代理服务器进行连接，其他的服务删除掉就可以了，这也是这个平台的一个有点，就是根据小时进行计费，所以到时候把延迟较高的服务器删除掉之后是不会计费的</strong></p>
-<p>删除服务器实例操作如下图<br><img src="009.png" alt="java-javascript"><br>查看并记录代理服务器实例的信息，复制保存ip、用户名、密码，如下图<br><img src="010.png" alt="java-javascript"></p>
-<h2 id="如何配置代理IP服务器环境"><a href="#如何配置代理IP服务器环境" class="headerlink" title="如何配置代理IP服务器环境"></a>如何配置代理IP服务器环境</h2><p>打开Xshell软件，新建连接，并填上代理服务器的IP，用户名，密码<br><img src="013.png" alt="java-javascript"><br><img src="014.png" alt="java-javascript"><br><img src="015.png" alt="java-javascript"><br><img src="016.png" alt="java-javascript"><br>Xshell连接服务器成功后，如下图显示<br><img src="017.png" alt="java-javascript"><br>接下来部署代理IP所需的环境，输入命令：wget –no-check-certificate <a target="_blank" rel="noopener" href="https://freed.ga/github/shadowsocksR.sh">https://freed.ga/github/shadowsocksR.sh</a>; bash shadowsocksR.sh,然后回车<br><img src="018.png" alt="java-javascript"><br>填写代理ip和端口，这里都填写11223，然后回车开始部署配置<br><img src="019.png" alt="java-javascript"><br>配置成功后显示如下，复制保存代理服务器信息<br><img src="020.png" alt="java-javascript"></p>
-<h2 id="如何连接代理IP"><a href="#如何连接代理IP" class="headerlink" title="如何连接代理IP"></a>如何连接代理IP</h2><p>打开SSTap-beta软件，点击‘+’号，选择‘添加SS/SSR代理..’<br><img src="021.png" alt="java-javascript"><br>添加代理服务器的信息，这些信息是上述步骤中配置成功后显示的代理服务器信息<br><img src="020.png" alt="java-javascript"><br><img src="022.png" alt="java-javascript"><br>配置成功后，测试代理网速，点击闪电图标，右侧会显示是否连接成功，以及延迟<br><img src="023.png" alt="java-javascript"><br><code>如果测试发现延迟较高，我们可以选择不使用这台代理服务器，重复上述步骤完成其他的两台也配置完成，并测试一下网速，最后选择一个延迟低稳定的代理服务器来使用</code><br>确定后点击‘连接’后，我们就可以通过代理服务器去访问外网，如google.com<br><img src="024.png" alt="java-javascript"><br><img src="025.png" alt="java-javascript"></p>
+                <h2 id="线程状态说明"><a href="#线程状态说明" class="headerlink" title="线程状态说明"></a>线程状态说明</h2><p><img src="%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81.png" alt="java-javascript"><br><small class="img-hint">线程状态说明图</small><br>线程状态从大的方面来说，可归结为<code>初始状态、可运行状态、不可运行状态、消亡状态</code>，具体细分为上图的7个状态</p>
+<p><strong>1）</strong>线程实现有两种方式，一是继承Thread类，二是实现Runnable接口，但不管怎么样，当我们new了Thread实例后，线程就进入了<code>初始状态</code><br><strong>2）</strong>当该对象调用了start()方法，就进入了<code>可运行状态</code><br><strong>3）</strong>进入可运行状态后，当该对象被操作系统选中，<code>获得cpu时间片</code>就会进入<code>运行状态</code><br><strong>4）</strong>run()方法或者main()方法结束后，线程就进入<code>终止状态</code><br><strong>5）</strong>当线程调用了自身的sleep()方法或其他线程的join()方法，就会进入<code>阻塞状态</code>,<strong>（该状态虽停止当前线程，但并不释放所占有的资源）</strong>。当sleep()结束或join()结束后，该线程进入<code>可运行状态</code>，继续等待os分配时间片<br><strong>6）</strong>当线程刚进入可运行状态（注意，还没运行），发现将要调用的资源被锁住（synchronized、lock），将会立即进入<code>锁池状态</code>，等待获得锁标记（这时的锁池里也许已经有了其他线程在等待获取锁标记，这是他们处于<code>队列状态，即先到先得</code>），一旦线程获得锁标记后，就转入<code>可运行状态</code>,等待os分配cpu时间片<br><strong>7）</strong>当线程调用wait（）方法后会进入<code>等待队列</code><strong>（进入这个状态会释放所占有的所有资源，与阻塞状态不同）</strong>，进入这个状态后，是不能自动唤醒的，必须依靠其他线程调用notify()或notifyAll()方法才能被唤醒（由于notify（）只是唤醒一个线程，但我们由于不能确定具体唤醒的是哪一个线程，也许我们需要唤醒的线程不能够被唤醒，因此在实际使用时，一般都用notifyAll（）方法，唤醒所有线程），线程被唤醒后会进入<code>锁池</code>,等待获取锁标记<br><strong>8）</strong>当线程调用了stop（）方法，即可使线程进入<code>消亡状态</code>,但是由于stop（）方法是不安全的，不鼓励使用，可以通过run（）方法里的条件变通实现线程的stop</p>
+<h2 id="sleep-与wait"><a href="#sleep-与wait" class="headerlink" title="sleep()与wait()"></a>sleep()与wait()</h2><p><strong>1）</strong>sleep()方法是Thread的静态方法，而wait()是Object实例方法<br><strong>2）</strong>wait()方法必须要在同步方法或者同步块中调用，也就是必须已经获得对象锁。而sleep()方法没有这个限制可以在任何地方使用。另外，wait（）方法会释放所占有的对象锁，使得该线程进入等待池中，等待下一次获取资源。而sleep()方法只是会让出cpu并不会释放对象锁<br><strong>3）</strong>sleep（）方法在休眠时间达到后如果再次获得cpu时间片就会继续执行，而wait（）方法必须等待Object.notify/Object.notifyAll通知后，才会离开等待池，并且再次获得cpu时间片才会继续执行</p>
 
 
                 <hr>
@@ -216,13 +210,9 @@
 
                 <ul class="pager">
                     
-                        <li class="previous">
-                            <a href="/2020/07/20/java线程状态说明/" data-toggle="tooltip" data-placement="top" title="java线程状态说明">&larr; Previous Post</a>
-                        </li>
-                    
                     
                         <li class="next">
-                            <a href="/2020/05/01/Fragment懒加载/" data-toggle="tooltip" data-placement="top" title="Fragment懒加载">Next Post &rarr;</a>
+                            <a href="/2020/06/10/如何搭建代理服务器/" data-toggle="tooltip" data-placement="top" title="如何搭建代理服务器">Next Post &rarr;</a>
                         </li>
                     
                 </ul>
@@ -269,9 +259,9 @@
                     <h5><a href="/tags/">FEATURED TAGS</a></h5>
                     <div class="tags">
                        
-                          <a class="tag" href="/tags/#代理" title="代理">代理</a>
+                          <a class="tag" href="/tags/#Java" title="Java">Java</a>
                         
-                          <a class="tag" href="/tags/#服务器" title="服务器">服务器</a>
+                          <a class="tag" href="/tags/#Android" title="Android">Android</a>
                         
                     </div>
                 </section>
@@ -292,8 +282,8 @@
 <script type="text/javascript">
     /* * * CONFIGURATION VARIABLES * * */
     var disqus_shortname = "hexo-theme-huxblog";
-    var disqus_identifier = "https://j-a-g.github.io/2020/06/10/%E5%A6%82%E4%BD%95%E6%90%AD%E5%BB%BA%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8/";
-    var disqus_url = "https://j-a-g.github.io/2020/06/10/%E5%A6%82%E4%BD%95%E6%90%AD%E5%BB%BA%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8/";
+    var disqus_identifier = "https://j-a-g.github.io/2020/07/20/java%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%AF%B4%E6%98%8E/";
+    var disqus_url = "https://j-a-g.github.io/2020/07/20/java%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81%E8%AF%B4%E6%98%8E/";
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
