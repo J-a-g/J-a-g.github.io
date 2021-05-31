@@ -150,5 +150,10 @@ theme: huxblog
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: 'git'
-  repo:  git@J-a-g.github.io:J-a-g/J-a-g.github.io.git
+  repo:  https://github.com/J-a-g/J-a-g.github.io.git
   branch: main
+
+# deploy:
+  # type: 'git'
+  # repo:  git@J-a-g.github.io:J-a-g/J-a-g.github.io.git
+  # branch: main
