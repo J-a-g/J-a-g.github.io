@@ -80,6 +80,13 @@ Text
 就是一个点
 ```
 
+##### 12.站内界面跳转
+```
+{% post_link 文章文件名（不要后缀） 文章标题（可选） %}
+如
+{% post_link Hello World 你好世界 %}
+```
+
 # Hexo常用命令
 ```
 hexo clean # 清理缓存
