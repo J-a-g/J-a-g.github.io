@@ -510,6 +510,18 @@ object MyTestConverters {
 当您使用下表中的特性时，该平台提供对双向数据绑定的内置支持。
 ![java-javascript](img02.jpg)
 
+## 总结
+
+`DataBinding`的优缺点总结：
+
+**优点**
+* 不用再写 `findViewById`，提高性能
+* `DataBinding` 作为 `MVVM` 架构中重要的组成部分,起到分离视图层和数据层的作用
+
+**缺点**
+* `bug`定位困难，出现问题基本只能看到 `DataBinding` 类无法生产
+* 代码补全效果不太好
+* 学习成本高
 
 
 <!-- //修改数据源后，UI上会更新，底层是如何实现的？？ -->
