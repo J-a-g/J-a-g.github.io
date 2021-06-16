@@ -1,26 +1,21 @@
 ---
 title: '学习Android Jetpack:Lifecycle & LiveData & ViewModel'
 date: 2021-06-13 21:40:48
-tags:
+catalog:    true
+header-img: "post-bg-unix-linux.jpg"
+tags: Android JetPack
 ---
 
-说明一下LiveData、ViewModel的作用，
-说明一下LiveData和ViewModel的使用场景
+## 地址
 
-LiveData: 
+官方文档：[https://developer.android.com/topic/libraries/architecture/lifecycle](https://developer.android.com/topic/libraries/architecture/lifecycle)
+官方项目文档：[https://developer.android.com/codelabs/android-lifecycles?index#0](https://developer.android.com/codelabs/android-lifecycles?index#0)
+官方项目地址：[https://github.com/googlecodelabs/android-lifecycles](https://github.com/googlecodelabs/android-lifecycles)
 
-Lifecycles:观察Activity和Fragment的生命周期，
-1.简化Activity或Fragment生命周期方法中的代码
-https://developer.android.com/codelabs/android-lifecycles?index#0
-https://github.com/googlecodelabs/android-lifecycles/issues/5
+下面文档中代码是根据上述官方资料，并结合自己实际调试情况的Sample
 
-https://github.com/googlecodelabs/android-lifecycles
+Sample地址：[https://github.com/J-a-g/GunDom/tree/LiveData](https://github.com/J-a-g/GunDom/tree/LiveData)
 
-step1:ViewModel的作用保持数据,
-step2:LiveData的什么功能？数据更新后，只通知给活跃的观察者
-step3:Lifecycle生命周期监听 ok
-step4:ViewModel数据共享
-step5:ViewModel数据恢复
 
 ## Lifecycle 
 
@@ -358,9 +353,130 @@ class LiveDataActivity : AppCompatActivity() {
 > * 避免 `Activity` 和 `Fragment` 过于庞大。现在，这些界面控制器负责显示数据，但不负责存储数据状态。
 > * 将 `LiveData` 实例与特定的 `Activity` 或 `Fragment` 实例分离开，并使 `LiveData` 对象在配置更改后继续存在。
 
-##### 扩展 LiveData 需要demo
+##### 扩展 LiveData
 
-##### 转换 LiveData demo
+```js
+class MyElapsedTime : LiveData<Long>() {
 
-##### 合并多个 LiveData 源 需要demo
+    fun onPostValue(v: Long){
+        postValue(v)
+    }
+
+    fun onValue(v: Long){
+        value = v
+    }
+
+    override fun onActive() {
+        super.onActive()
+        Log.w("scj", "MyElapsedTime onActive ")
+    }
+
+    override fun onInactive() {
+        super.onInactive()
+        Log.w("scj", "MyElapsedTime onInactive ")
+    }
+}
+
+
+
+        liveDataTimerViewModel?.myTime?.observe(this, Observer {
+            Log.w("scj", "MyElapsedTime value-> " + it)
+        })
+```
+这里主要要讲的是：
+* 当 `LiveData` 对象具有活跃观察者时，会调用 `onActive()` 方法。
+* 当 `LiveData` 对象没有任何活跃观察者时，会调用 `onInactive()` 方法。
+* `setValue(T)` 方法将更新 `LiveData` 实例的值，并将更改告知活跃观察者。
+
+>注意：
+> * 如果 `Lifecycle` 对象未处于活跃状态，那么即使值发生更改，也不会调用观察者。
+> * 销毁 `Lifecycle` 对象后，会自动移除观察者。
+
+##### 转换 LiveData 
+
+略，[自行查看官方文档](https://developer.android.com/topic/libraries/architecture/livedata#transform_livedata)
+
+##### 合并多个 LiveData 源 
+
+**`MediatorLiveData`** 是 `LiveData` 的子类，允许您合并多个 `LiveData` 源。只要任何原始的 `LiveData` 源对象发生更改，就会触发 `MediatorLiveData` 对象的观察者。
+场景，如果界面中有可以从本地数据库或网络更新的 `LiveData` 对象，则可以向 `MediatorLiveData` 对象添加以下源：
+* 与存储在数据库中的数据关联的 LiveData 对象。
+* 与从网络访问的数据关联的 LiveData 对象。
+
+您的 Activity 只需观察 MediatorLiveData 对象即可从这两个源接收更新。
+
+下面设计一个类似场景的代码，两个 LiveData，一个 LiveData 通过定时器修改值，一个 LiveData 通过手动操作修改值，通过 MediatorLiveData 合并两个 LiveData ，观察 MediatorLiveData 来实现UI的更新
+```js
+class LiveDataTimerViewModel : ViewModel() {
+
+    val ONE_SECOND: Long = 1000
+    var mInitialTime: Long = 0
+    var timer: Timer? = null
+
+    val mElapsedTime: MutableLiveData<Long> = MutableLiveData()//LiveData
+    val myTime: MyElapsedTime = MyElapsedTime() //LiveData
+    val liveDataMerger = MediatorLiveData<Long>() //MediatorLiveData
+
+    init {
+        mInitialTime = SystemClock.elapsedRealtime()
+        timer = Timer()
+
+        //合并两个LiveData，并在LiveData值发生改变后回调到下面的代码中，修改 MediatorLiveData 值
+        liveDataMerger.addSource(mElapsedTime, androidx.lifecycle.Observer {
+            liveDataMerger.value = it
+        })
+        liveDataMerger.addSource(myTime, androidx.lifecycle.Observer {
+            mInitialTime = SystemClock.elapsedRealtime()
+            liveDataMerger.value = it
+        })
+
+        timer?.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                val newValue = (SystemClock.elapsedRealtime() - mInitialTime) / 1000
+                mElapsedTime.postValue(newValue)//通过定时器修改LiveData的值
+            }
+        }, ONE_SECOND, ONE_SECOND)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        timer?.cancel()
+    }
+}
+
+
+
+
+class LiveDataActivity : AppCompatActivity() {
+
+    var binding: ActivityLiveDataBinding? = null
+    var liveDataTimerViewModel: LiveDataTimerViewModel? = null
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding =
+            DataBindingUtil.setContentView(this, R.layout.activity_live_data)
+
+        liveDataTimerViewModel = ViewModelProvider(this).get(LiveDataTimerViewModel::class.java)
+        subscribe()
+
+        binding?.btnReset?.setOnClickListener {
+            liveDataTimerViewModel?.myTime?.onValue(0)//通过手动操作修改LiveData的值
+        }
+    }
+
+    fun subscribe() {
+        //合并之后的订阅
+        liveDataTimerViewModel?.liveDataMerger?.observe(this, Observer {
+            val newText = it.toString() + "seconds elapsed"
+            binding?.tvHelloWorld?.text = newText
+        })
+    }
+}
+
+
+```
+
+
 
