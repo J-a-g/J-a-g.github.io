@@ -1,6 +1,6 @@
 ---
 title: '学习Android Jetpack:Lifecycle & LiveData & ViewModel'
-date: 2021-06-13 21:40:48
+date: 2021-05-13 21:40:48
 catalog:    true
 header-img: "post-bg-unix-linux.jpg"
 tags: Android JetPack
