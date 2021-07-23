@@ -58,7 +58,7 @@ duoshuo_share: true                     # set to false if you want to use Commen
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "生活就是不停遇到困难并克服困难"
+sidebar-about-description: "弱水三千只取一瓢"
 sidebar-avatar: /j-a-g.github.io/img/my.png     # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
