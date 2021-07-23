@@ -14,6 +14,8 @@ tags: Android JetPack
 ## Sameple展示
 它的效果大概是这样：
 ![java-javascript](ezgif.com-gif-maker.gif)
+项目地址：[https://github.com/J-a-g/GunDom/tree/Room](https://github.com/J-a-g/GunDom/tree/Room)
+
 后续的文档也是根据 Sameple 项目进行说明，可能不能涵盖 Room 的所有知识点，但是尽量将最常用的功能进行说明。
 这里大致说明一下 Sameple 的需求功能：可以注册账号，并通过账号进行登录；主页有两个导航商品和收藏。商品展示的所有商品信息，并且可以通过按钮展示指定系列的商品信息，且可以用过收藏按钮关联的用户信息上；收藏页中主要是展示该账号用户选在了收藏的商品信息。
 
