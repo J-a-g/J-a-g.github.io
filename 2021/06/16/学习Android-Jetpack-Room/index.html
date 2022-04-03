@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          学习Android Jetpack:Room - JAG的博客 | JAG&#39;s Blog
+        
+    </title>
+
+    <link rel="canonical" href="https://j-a-g.github.io/2021/06/16/学习Android-Jetpack-Room/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">JAG&#39;s Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#Android JetPack" title="Android JetPack">Android JetPack</a>
+                        
+                    </div>
+                    <h1>学习Android Jetpack:Room</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Chengjian Su on
+                        2021-06-16
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/android/architecture-components-samples">https://github.com/android/architecture-components-samples</a><br>文档地址：<a target="_blank" rel="noopener" href="https://developer.android.com/training/data-storage/room">https://developer.android.com/training/data-storage/room</a></p>
+<h2 id="Sameple展示"><a href="#Sameple展示" class="headerlink" title="Sameple展示"></a>Sameple展示</h2><p>它的效果大概是这样：<br><img src="ezgif.com-gif-maker.gif" alt="java-javascript"><br>项目地址：<a target="_blank" rel="noopener" href="https://github.com/J-a-g/GunDom/tree/Room">https://github.com/J-a-g/GunDom/tree/Room</a></p>
+<p>后续的文档也是根据 Sameple 项目进行说明，可能不能涵盖 Room 的所有知识点，但是尽量将最常用的功能进行说明。<br>这里大致说明一下 Sameple 的需求功能：可以注册账号，并通过账号进行登录；主页有两个导航商品和收藏。商品展示的所有商品信息，并且可以通过按钮展示指定系列的商品信息，且可以用过收藏按钮关联的用户信息上；收藏页中主要是展示该账号用户选在了收藏的商品信息。</p>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Room 在 SQLite 上提供了一个抽象层，以便在充分利用 SQLite 的强大功能的同时，能够流畅地访问数据库。</p>
+<p>如需在应用中使用 Room，请将以下依赖项添加到应用的 build.gradle 文件：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    def room_version = <span class="string">&quot;2.3.0&quot;</span></span><br><span class="line"></span><br><span class="line">    implementation(<span class="string">&quot;androidx.room:room-runtime:$room_version&quot;</span>)</span><br><span class="line">    annotationProcessor <span class="string">&quot;androidx.room:room-compiler:$room_version&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// To use Kotlin annotation processing tool (kapt)</span></span><br><span class="line">    kapt(<span class="string">&quot;androidx.room:room-compiler:$room_version&quot;</span>)</span><br><span class="line">    <span class="comment">// To use Kotlin Symbolic Processing (KSP)</span></span><br><span class="line">    ksp(<span class="string">&quot;androidx.room:room-compiler:$room_version&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// optional - Kotlin Extensions and Coroutines support for Room</span></span><br><span class="line">    implementation(<span class="string">&quot;androidx.room:room-ktx:$room_version&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// optional - RxJava2 support for Room</span></span><br><span class="line">    implementation <span class="string">&quot;androidx.room:room-rxjava2:$room_version&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// optional - RxJava3 support for Room</span></span><br><span class="line">    implementation <span class="string">&quot;androidx.room:room-rxjava3:$room_version&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// optional - Guava support for Room, including Optional and ListenableFuture</span></span><br><span class="line">    implementation <span class="string">&quot;androidx.room:room-guava:$room_version&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// optional - Test helpers</span></span><br><span class="line">    testImplementation(<span class="string">&quot;androidx.room:room-testing:$room_version&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Room 包含 3 个主要组件：</p>
+<ul>
+<li><p><strong>数据库：</strong>包含数据库持有者，并作为应用已保留的持久关系型数据的底层连接的主要接入点。<br>使用 <code>@Database</code> 注释的类应满足以下条件：</p>
+<ul>
+<li>是扩展 <code>RoomDatabase</code> 的抽象类。</li>
+<li>在注释中添加与数据库关联的实体列表。</li>
+<li>包含具有 0 个参数且返回使用 <code>@Dao</code> 注释的类的抽象方法。</li>
+</ul>
+<p>在运行时，您可以通过调用 <code>Room.databaseBuilder()</code> 或 <code>Room.inMemoryDatabaseBuilder()</code> 获取 <code>Database</code> 的实例。</p>
+</li>
+<li><p><strong>Entity：</strong>表示数据库中的表。</p>
+</li>
+<li><p><strong>DAO：</strong>包含用于访问数据库的方法。</p>
+</li>
+</ul>
+<p>应用使用 Room 数据库来获取与该数据库关联的数据访问对象 (DAO)。然后，应用使用每个 DAO 从数据库中获取实体，然后再将对这些实体的所有更改保存回数据库中。 最后，应用使用实体来获取和设置与数据库中的表列相对应的值。<br><img src="1.jpg" alt="java-javascript"><br><small class="img-hint">Room 架构图</small></p>
+<h2 id="插件推荐"><a href="#插件推荐" class="headerlink" title="插件推荐"></a>插件推荐</h2><p>为了方便数据库调试，推荐在 Android studio 中安装 Database Inspector 插件。可以通过这个插件直观的看到数据库表结构、数据库中的数据。<br><img src="3.jpg" alt="java-javascript"><br><img src="2.jpg" alt="java-javascript"></p>
+<h2 id="RoomDatabase"><a href="#RoomDatabase" class="headerlink" title="RoomDatabase"></a>RoomDatabase</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">@Database(entities = [Product::class, User::class, Like::class], version = 1)</span><br><span class="line">abstract class AppDatabase : RoomDatabase() &#123;</span><br><span class="line">    abstract fun productDao(): ProductDao</span><br><span class="line"></span><br><span class="line">    abstract fun userDao(): UserDao</span><br><span class="line"></span><br><span class="line">    abstract fun likeDao(): LikeDao</span><br><span class="line"></span><br><span class="line">    companion object &#123;</span><br><span class="line">        @Volatile</span><br><span class="line">        private <span class="keyword">var</span> instance: AppDatabase? = <span class="literal">null</span></span><br><span class="line"></span><br><span class="line">        fun getInstance(context: Context): AppDatabase &#123;</span><br><span class="line">            <span class="keyword">return</span> instance ?: <span class="function"><span class="title">synchronized</span>(<span class="params"><span class="built_in">this</span></span>)</span> &#123;</span><br><span class="line">                instance ?: buildDataBase(context).also &#123; instance = it &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        private fun buildDataBase(context: Context): AppDatabase &#123;</span><br><span class="line">            <span class="keyword">return</span> Room.databaseBuilder(</span><br><span class="line">                context,</span><br><span class="line">                AppDatabase::<span class="keyword">class</span>.java, <span class="string">&quot;my_database.db&quot;</span></span><br><span class="line">            ).allowMainThreadQueries()</span><br><span class="line">                .addCallback(sRoomDatabaseCallback)</span><br><span class="line">                .build()</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        private val sRoomDatabaseCallback: RoomDatabase.Callback =</span><br><span class="line">            object : RoomDatabase.Callback() &#123;</span><br><span class="line">                override fun <span class="function"><span class="title">onCreate</span>(<span class="params">db: SupportSQLiteDatabase</span>)</span> &#123;</span><br><span class="line">                    <span class="built_in">super</span>.onCreate(db)</span><br><span class="line">                    Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;sRoomDatabaseCallback onCreate&quot;</span>)</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="定义实体-Entity"><a href="#定义实体-Entity" class="headerlink" title="定义实体 Entity"></a>定义实体 Entity</h2><p>使用 <code>Room</code> 持久性库时，您可以将相关字段集定义为实体。对于每个实体，系统会在关联的 <code>Database</code> 对象中创建一个表，以存储这些项。您必须通过 <code>Database</code> 类中的 <code>entities</code> 数组引用实体类。</p>
+<p><strong>如何定义实体</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@Entity(tableName = <span class="string">&quot;products&quot;</span>) <span class="comment">//表名</span></span><br><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">Product</span>(</span></span><br><span class="line"><span class="class">    @<span class="title">PrimaryKey</span>(<span class="title">autoGenerate</span> </span>= <span class="literal">true</span>)<span class="comment">//主键，且自增</span></span><br><span class="line">    <span class="keyword">var</span> pd_id: Long = <span class="number">0</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_name&quot;</span>) <span class="keyword">var</span> name: <span class="built_in">String</span> =<span class="string">&quot;&quot;</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_price&quot;</span>) <span class="keyword">var</span> price: Double = <span class="number">0.0</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_brand&quot;</span>) <span class="keyword">var</span> brand: <span class="built_in">String</span> = <span class="string">&quot;&quot;</span>,</span><br><span class="line">    <span class="keyword">var</span> likes: Int = <span class="number">0</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_description&quot;</span>) <span class="keyword">var</span> description: <span class="built_in">String</span> = <span class="string">&quot;&quot;</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_imgUrl&quot;</span>) <span class="keyword">var</span> imageUrl: <span class="built_in">String</span> = <span class="string">&quot;&quot;</span></span><br><span class="line"><span class="comment">//    @Ignore val picture: Bitmap?  忽略字段，不会再表中生成列</span></span><br><span class="line"></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p><code>@Entity(tableName = &quot;products&quot;)</code> 设置在数据库中的表名 <code>products</code><br><code>@PrimaryKey(autoGenerate = true)</code> 定义 <code>pd_id</code> 为主键，且自增<br><code>@ColumnInfo(name = &quot;pd_name&quot;)</code> 定义字段在表中的列名<br><code>@Ignore val picture: Bitmap</code> 如果类中有些字段不需要在表中有对应列，使用 <code>@Ignore</code> 进行注释</p>
+<p>项目除了上面的实体，还有两个实体分别是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">@Entity(primaryKeys = [<span class="string">&quot;pd_id&quot;</span>, <span class="string">&quot;user_id&quot;</span>])</span><br><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">Like</span>(</span></span><br><span class="line">    val pd_id: Long,</span><br><span class="line">    val user_id: Long</span><br><span class="line"></span><br><span class="line">) </span><br><span class="line"></span><br><span class="line">@Entity(tableName = <span class="string">&quot;user&quot;</span>)</span><br><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">User</span> (</span></span><br><span class="line"><span class="class">    @<span class="title">PrimaryKey</span>(<span class="title">autoGenerate</span> </span>= <span class="literal">true</span>)</span><br><span class="line">    <span class="keyword">var</span> user_id: Long = <span class="number">0</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;tb_username&quot;</span>)</span><br><span class="line">    <span class="keyword">var</span> username: <span class="built_in">String</span>? = <span class="literal">null</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;tb_password&quot;</span>)</span><br><span class="line">    <span class="keyword">var</span> password: <span class="built_in">String</span>? = <span class="literal">null</span>,</span><br><span class="line">    <span class="keyword">var</span> email: <span class="built_in">String</span>? = <span class="literal">null</span>,</span><br><span class="line">    <span class="keyword">var</span> login: <span class="built_in">Boolean</span>? = <span class="literal">false</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h2 id="使用-Room-DAO-访问数据"><a href="#使用-Room-DAO-访问数据" class="headerlink" title="使用 Room DAO 访问数据"></a>使用 Room DAO 访问数据</h2><p>如需使用 <code>Room 持久性库</code>访问应用的数据，您可以使用数据访问对象 (DAO)。这些 <code>Dao</code> 对象构成了 Room 的主要组件，因为每个 DAO 都包含一些方法，这些方法提供对应用数据库的抽象访问权限。</p>
+<p>通过使用 DAO 类（而不是查询构建器或直接查询）访问数据库，您可以拆分数据库架构的不同组件。此外，借助 DAO，您可以在测试应用时轻松模拟数据库访问。    </p>
+<p>DAO 既可以是接口，也可以是抽象类。如果是抽象类，则该 DAO 可以选择有一个以 <code>RoomDatabase</code> 为唯一参数的构造函数。Room 会在编译时创建每个 DAO 实现。</p>
+<h5 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h5><p>当您创建 DAO 方法并使用 <code>@Insert</code> 对其进行注释时，Room 会生成一个实现，该实现在单个事务中将所有参数插入数据库中。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface ProductDao &#123;</span><br><span class="line">    @Insert(onConflict = OnConflictStrategy.REPLACE)<span class="comment">//冲突策略</span></span><br><span class="line">    fun insertProduct(product: Product)</span><br><span class="line"></span><br><span class="line">    @Insert(onConflict = OnConflictStrategy.REPLACE)</span><br><span class="line">    fun insertProducts(product: List&lt;Product&gt;)</span><br><span class="line"></span><br><span class="line">    @Insert</span><br><span class="line">    fun insertBothProducts(product1: Product, <span class="attr">product2</span>: Product)</span><br><span class="line"></span><br><span class="line">    @Insert</span><br><span class="line">    fun insertProductAndLoveProducts(product: Product, <span class="attr">loveProduct</span>: List&lt;Product&gt;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果 <code>@Insert</code> 方法只接收 1 个参数，则它可以返回 long，这是插入项的新 rowId。如果参数是数组或集合，则应返回 long[] 或 List<Long>。</p>
+<p>对数据库设计时，不允许重复数据的出现。否则，必然造成大量的冗余数据。实际上，难免会碰到这个问题：冲突。当我们像数据库插入数据时，该数据已经存在了，必然造成了冲突。该冲突该怎么处理呢？</p>
+<ul>
+<li><strong>OnConflictStrategy.REPLACE</strong>：冲突策略是取代旧数据同时继续事务 </li>
+<li><strong>OnConflictStrategy.ROLLBACK</strong>：冲突策略是回滚事务</li>
+<li><strong>OnConflictStrategy.ABORT</strong>：冲突策略是终止事务</li>
+<li><strong>OnConflictStrategy.FAIL</strong>：冲突策略是事务失败</li>
+<li><strong>OnConflictStrategy.IGNORE</strong>：冲突策略是忽略冲突</li>
+</ul>
+<h5 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h5><p><code>@Update</code> 便捷方法会修改数据库中以参数形式给出的一组实体。<strong>它使用与每个实体的主键匹配的查询。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface ProductDao &#123;</span><br><span class="line">    @Update</span><br><span class="line">    fun updateProduct(vararg product: Product)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然通常没有必要，但是您可以让此方法返回一个 int 值，以指示数据库中更新的行数。</p>
+<h5 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h5><p><code>@Delete</code> 便捷方法会从数据库中删除一组以参数形式给出的实体。<strong>它使用主键查找要删除的实体。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface ProductDao &#123;</span><br><span class="line">    @Delete</span><br><span class="line">    fun deleteProducts(vararg product: Product)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>虽然通常没有必要，但是您可以让此方法返回一个 int 值，以指示从数据库中删除的行数。</p>
+<h5 id="查询"><a href="#查询" class="headerlink" title="查询"></a>查询</h5><p><code>@Query</code> 是 DAO 类中使用的主要注释。它允许您对数据库执行读/写操作。每个 <code>@Query</code> 方法都会在编译时进行验证，因此如果查询出现问题，则会发生编译错误，而不是运行时失败。</p>
+<p>上述的 <strong>更新、删除</strong> 都是快捷方法，一些复杂的更新、删除逻辑则可以通过 <code>@Query（&quot;sql语句&quot;)</code> 进行更新或者删除操作</p>
+<p><strong>查询</strong></p>
+<p>下面罗列一下常见的几种查询语句</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface ProductDao &#123;</span><br><span class="line">    @Query(<span class="string">&quot;SELECT * FROM products ORDER BY pd_id DESC&quot;</span>)</span><br><span class="line">    fun loadAllProducts(): Flow&lt;List&lt;Product&gt;&gt;<span class="comment">//返回所有商品信息并对pd_id进行降序排序</span></span><br><span class="line"></span><br><span class="line">    @Query(<span class="string">&quot;SELECT * FROM products WHERE pd_brand LIKE :brand ORDER BY pd_id DESC&quot;</span>)</span><br><span class="line">    fun loadBrandProducts(brand: <span class="built_in">String</span>): Flow&lt;List&lt;Product&gt;&gt;<span class="comment">//根据品牌类型查询商品信息，并根据pd_id进行降序排序</span></span><br><span class="line"></span><br><span class="line">    @Query(<span class="string">&quot;SELECT pd_name, pd_price FROM products&quot;</span>)</span><br><span class="line">    fun getNamePrices(): List&lt;NameTuple&gt;<span class="comment">//列子集查询</span></span><br><span class="line"></span><br><span class="line">    @Query(<span class="string">&quot;SELECT * FROM products ORDER BY pd_id DESC LIMIT 1&quot;</span>)</span><br><span class="line">    fun getTopProduct(): Product?<span class="comment">//返回所有商品信息并对pd_id进行降序排序且只返回一条商品信息</span></span><br><span class="line"></span><br><span class="line">    @Query(<span class="string">&quot;select * from `like` inner join products on `like`.pd_id = products.pd_id inner join user on user.user_id = `like`.user_id&quot;</span>)</span><br><span class="line">    fun getUserAndProduct(): List&lt;Result&gt;<span class="comment">//多表查询</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>返回列的子集</strong></p>
+<p>大多数情况下，您只需获取实体的几个字段。例如，您的界面可能仅显示用户的名字和姓氏，而不是用户的每一条详细信息。通过仅提取应用界面中显示的列，您可以节省宝贵的资源，并且您的查询也能更快完成。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">NameTuple</span>(</span></span><br><span class="line"><span class="class">    @<span class="title">ColumnInfo</span>(<span class="title">name</span> </span>= <span class="string">&quot;pd_name&quot;</span>) val name: <span class="built_in">String</span>?,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_price&quot;</span>) val price: Double?</span><br><span class="line">) </span><br><span class="line"></span><br><span class="line">@Dao</span><br><span class="line">interface ProductDao &#123;</span><br><span class="line">    @Query(<span class="string">&quot;SELECT pd_name, pd_price FROM products&quot;</span>)</span><br><span class="line">    fun getNamePrices(): List&lt;NameTuple&gt;<span class="comment">//列子集查询</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>多表查询</strong></p>
+<p>下面案例的意思：查看所有用户收藏的所有商品信息，并返回列子集结果</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Result</span>(</span></span><br><span class="line"><span class="class">    @<span class="title">ColumnInfo</span>(<span class="title">name</span> </span>= <span class="string">&quot;tb_username&quot;</span>) val userName: <span class="built_in">String</span> = <span class="string">&quot;&quot;</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_name&quot;</span>) <span class="keyword">var</span> name: <span class="built_in">String</span> = <span class="string">&quot;&quot;</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_price&quot;</span>) <span class="keyword">var</span> price: Double = <span class="number">0.0</span></span><br><span class="line">) </span><br><span class="line"></span><br><span class="line">@Dao</span><br><span class="line">interface ProductDao &#123;</span><br><span class="line">    @Query(<span class="string">&quot;select * from `like` inner join products on `like`.pd_id = products.pd_id inner join user on user.user_id = `like`.user_id&quot;</span>)</span><br><span class="line">    fun getUserAndProduct(): List&lt;Result&gt;<span class="comment">//多表查询</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>更新、删除</strong></p>
+<p>通过 <code>@Query</code> 执行更新或删除语句</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Dao</span><br><span class="line">interface ProductDao &#123;</span><br><span class="line">    @Query(<span class="string">&quot;update products set likes = case when products.pd_id in (select pd_id from `like` where user_id Like :user_id) then 1 else 0 end&quot;</span>)</span><br><span class="line">    fun updateFavoritesProducts(user_id: Long)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@Dao</span><br><span class="line">abstract <span class="class"><span class="keyword">class</span> <span class="title">LikeDao</span> </span>&#123;</span><br><span class="line">    @Query(<span class="string">&quot;DELETE FROM `like` WHERE pd_id Like :pro_id AND user_id Like :user_id&quot;</span>)</span><br><span class="line">    abstract fun deleteLikes(pro_id: Long, <span class="attr">user_id</span>: Long)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>使用 Kotlin 协程进行异步查询</strong></p>
+<p>您可以将 suspend Kotlin 关键字添加到 DAO 方法中，以使用 Kotlin 协程功能使这些方法成为异步方法。这样可确保不会在主线程上执行这些方法。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@Dao</span><br><span class="line">abstract <span class="class"><span class="keyword">class</span> <span class="title">LikeDao</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    @Insert(onConflict = OnConflictStrategy.REPLACE)</span><br><span class="line">    abstract  fun insertLike(like: Like)</span><br><span class="line"></span><br><span class="line">    <span class="comment">//1.删除数据，根据主键来删除数据的！！！</span></span><br><span class="line">    @Delete</span><br><span class="line">    abstract suspend fun deleteLike(like: Like)</span><br><span class="line"></span><br><span class="line">    @Query(<span class="string">&quot;DELETE FROM `like` WHERE pd_id Like :pro_id AND user_id Like :user_id&quot;</span>)</span><br><span class="line">    abstract suspend fun deleteLikes(pro_id: Long, <span class="attr">user_id</span>: Long)</span><br><span class="line"></span><br><span class="line">    @Query(<span class="string">&quot;SELECT * FROM `like` WHERE user_id Like :user_id&quot;</span>)</span><br><span class="line">    abstract suspend fun queryLikesByUserId(user_id: Long): <span class="built_in">Array</span>&lt;Like&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>适用于带有 <code>@Transaction</code> 注释的 DAO 方法。您可以使用此功能通过其他 DAO 方法构建暂停数据库方法。然后，这些方法会在单个数据库事务中运行。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@Dao</span><br><span class="line">abstract <span class="class"><span class="keyword">class</span> <span class="title">UserDao</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    @Transaction</span><br><span class="line">    open suspend fun regist(user: User): <span class="built_in">Boolean</span> &#123;</span><br><span class="line">        val users = user.username?.let &#123; user.email?.let &#123; it1 -&gt; loadUsersByColumn(it, it1) &#125; &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">if</span> (users != <span class="literal">null</span> &amp;&amp; users.isNotEmpty()) &#123;</span><br><span class="line">            <span class="literal">false</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            insertUsers(user)</span><br><span class="line">            <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Query(<span class="string">&quot;SELECT * FROM user WHERE tb_username Like :username OR email Like :email&quot;</span>)</span><br><span class="line">    abstract fun loadUsersByColumn(username: <span class="built_in">String</span>, <span class="attr">email</span>: <span class="built_in">String</span>): <span class="built_in">Array</span>&lt;User&gt;</span><br><span class="line"></span><br><span class="line">    @Insert(onConflict = OnConflictStrategy.REPLACE)</span><br><span class="line">    abstract suspend fun insertUsers(vararg users: User): List&lt;Long&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="定义对象之间的关系"><a href="#定义对象之间的关系" class="headerlink" title="定义对象之间的关系"></a>定义对象之间的关系</h2><h5 id="创建嵌套对象"><a href="#创建嵌套对象" class="headerlink" title="创建嵌套对象"></a>创建嵌套对象</h5><p>有时，您可能希望在数据库逻辑中将某个实体或数据对象表示为一个紧密的整体，即使该对象包含多个字段也是如此。在这些情况下，您可以使用 <code>@Embedded</code> 注释表示要分解为表格中的子字段的对象。然后，您可以像查询其他各个列一样查询嵌套字段。</p>
+<p>例如，您的 User 类可以包含一个 Address 类型的字段，它表示名为 street、city、state 和 postCode 的字段的组合。若要在表中单独存储组合列，请在 User 类（带有 <code>@Embedded</code> 注释）中添加 Address 字段，如以下代码段所示：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">Address</span>(</span></span><br><span class="line">    val street: String?,</span><br><span class="line">    val state: <span class="built_in">String</span>?,</span><br><span class="line">    val city: <span class="built_in">String</span>?,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;post_code&quot;</span>) val postCode: Int</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">@Entity</span><br><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">User</span>(</span></span><br><span class="line">    @PrimaryKey val id: Int,</span><br><span class="line">    val firstName: <span class="built_in">String</span>?,</span><br><span class="line">    @Embedded val address: Address?</span><br><span class="line">)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>然后，表示 User 对象的表将包含具有以下名称的列：id、firstName、street、state、city 和 post_code。</p>
+<p>如果某个实体具有相同类型的多个嵌套字段，您可以通过设置 <code>prefix</code> 属性确保每个列的唯一性。然后，Room 会将提供的值添加到嵌套对象中每个列名称的开头。</p>
+<h5 id="多对多关系"><a href="#多对多关系" class="headerlink" title="多对多关系"></a>多对多关系</h5><p>对象之间的关系主要有：<a target="_blank" rel="noopener" href="https://developer.android.com/training/data-storage/room/relationships#nested-relationships">嵌套关系</a>、<a target="_blank" rel="noopener" href="https://developer.android.com/training/data-storage/room/relationships#one-to-one">一对一关系</a>、<a target="_blank" rel="noopener" href="https://developer.android.com/training/data-storage/room/relationships#one-to-many">一对多关系</a>、<a target="_blank" rel="noopener" href="https://developer.android.com/training/data-storage/room/relationships#many-to-many">多对多关系</a>,案例中说明了多对多的关系，其他关系并没有说明可以直接看文档。</p>
+<p>两个实体之间的多对多关系是指这样一种关系：父实体的每个实例对应于子实体的零个或多个实例，反之亦然。</p>
+<p>在案例中一个用户账号可能收藏多个商品，同样一个商品也可能被多个用户账号所收藏。</p>
+<p>首先需要两个实体分别代表用户和商品，再创建第三个类来表示两个实体之间的<strong>关联实体（即交叉引用表）</strong>，交叉引用表中必须包含表中表示的多对多关系中每个实体的主键列。在案例中就是用户的主键和商品的主键</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">@Entity(tableName = <span class="string">&quot;user&quot;</span>)</span><br><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">User</span> (</span></span><br><span class="line"><span class="class">    @<span class="title">PrimaryKey</span>(<span class="title">autoGenerate</span> </span>= <span class="literal">true</span>)</span><br><span class="line">    <span class="keyword">var</span> user_id: Long = <span class="number">0</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;tb_username&quot;</span>)</span><br><span class="line">    <span class="keyword">var</span> username: <span class="built_in">String</span>? = <span class="literal">null</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;tb_password&quot;</span>)</span><br><span class="line">    <span class="keyword">var</span> password: <span class="built_in">String</span>? = <span class="literal">null</span>,</span><br><span class="line">    <span class="keyword">var</span> email: <span class="built_in">String</span>? = <span class="literal">null</span>,</span><br><span class="line">    <span class="keyword">var</span> login: <span class="built_in">Boolean</span>? = <span class="literal">false</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">@Entity(tableName = <span class="string">&quot;products&quot;</span>)</span><br><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">Product</span>(</span></span><br><span class="line"><span class="class">    @<span class="title">PrimaryKey</span>(<span class="title">autoGenerate</span> </span>= <span class="literal">true</span>)</span><br><span class="line">    <span class="keyword">var</span> pd_id: Long = <span class="number">0</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_name&quot;</span>) <span class="keyword">var</span> name: <span class="built_in">String</span> =<span class="string">&quot;&quot;</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_price&quot;</span>) <span class="keyword">var</span> price: Double = <span class="number">0.0</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_brand&quot;</span>) <span class="keyword">var</span> brand: <span class="built_in">String</span> = <span class="string">&quot;&quot;</span>,</span><br><span class="line">    <span class="keyword">var</span> likes: Int = <span class="number">0</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_description&quot;</span>) <span class="keyword">var</span> description: <span class="built_in">String</span> = <span class="string">&quot;&quot;</span>,</span><br><span class="line">    @ColumnInfo(name = <span class="string">&quot;pd_imgUrl&quot;</span>) <span class="keyword">var</span> imageUrl: <span class="built_in">String</span> = <span class="string">&quot;&quot;</span></span><br><span class="line"><span class="comment">//    @Ignore val picture: Bitmap?  忽略字段</span></span><br><span class="line"></span><br><span class="line">) </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@Entity(primaryKeys = [<span class="string">&quot;pd_id&quot;</span>, <span class="string">&quot;user_id&quot;</span>])</span><br><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">Like</span>(</span></span><br><span class="line">    val pd_id: Long,</span><br><span class="line">    val user_id: Long</span><br><span class="line"></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>下一步取决于您想如何查询这些相关实体。</p>
+<ul>
+<li><p>如果您想查询用户和每个用户所收藏的商品信息，则应创建一个新的数据类 <code>UserWithProducts</code>，其中包含单个 User 对象，以及该用户所收藏的所有 Product 对象的列表。</p>
+</li>
+<li><p>如果您想查询商品和每个商品被那些用户收藏的信息，则应创建一个新的数据类 <code>ProductWithUsers</code>，其中包含单个 Product 对象，以及该商品被那些用户收藏的所有 User 对象的列表。<br>在这两种情况下，都可以通过以下方法在实体之间建立关系：在上述每个类中的 <code>@Relation</code> 注释中使用 <code>associateBy</code> 属性来确定提供 Product 实体与 User 实体之间关系的交叉引用实体。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ProductWithUsers</span>(</span></span><br><span class="line"><span class="class">    @<span class="title">Embedded</span></span></span><br><span class="line">    val product: Product,</span><br><span class="line">    @Relation(</span><br><span class="line">        parentColumn = <span class="string">&quot;pd_id&quot;</span>,</span><br><span class="line">        entityColumn = <span class="string">&quot;user_id&quot;</span>,</span><br><span class="line">        associateBy = Junction(Like::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    )</span></span><br><span class="line">    val users: List&lt;User&gt;</span><br><span class="line"></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UserWithProducts</span>(</span></span><br><span class="line"><span class="class">    @<span class="title">Embedded</span></span></span><br><span class="line">    val user: User,</span><br><span class="line">    @Relation(</span><br><span class="line">        parentColumn = <span class="string">&quot;user_id&quot;</span>,</span><br><span class="line">        entityColumn = <span class="string">&quot;pd_id&quot;</span>,</span><br><span class="line"></span><br><span class="line">        associateBy = Junction(Like::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    )</span></span><br><span class="line">    val products: List&lt;Product&gt;</span><br><span class="line">    ) </span><br></pre></td></tr></table></figure>
+<p>最后，向 DAO 类添加一个方法，用于提供您的应用所需的查询功能。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@Transaction</span><br><span class="line">@Query(<span class="string">&quot;SELECT * FROM user WHERE user_id Like :user_id&quot;</span>)</span><br><span class="line">abstract fun getFavoritesProducts(user_id: Long): LiveData&lt;List&lt;UserWithProducts&gt;&gt;</span><br><span class="line"></span><br><span class="line">@Transaction</span><br><span class="line">@Query(<span class="string">&quot;SELECT * FROM products&quot;</span>)</span><br><span class="line">fun getProductsWithUsers(): List&lt;ProductWithUsers&gt;</span><br></pre></td></tr></table></figure>
+<p>这两个方法都需要 Room 运行两次查询，因此应为这两个方法添加 @Transaction 注释，以确保整个操作以原子方式执行。</p>
+</li>
+</ul>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2021/07/14/学习Android-Jetpack-Hilt依赖项注入/" data-toggle="tooltip" data-placement="top" title="学习Android Jetpack:Hilt依赖项注入">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2021/05/13/学习Android-Jetpack-LiveData-ViewModel/" data-toggle="tooltip" data-placement="top" title="学习Android Jetpack:Lifecycle & LiveData & ViewModel">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Android JetPack" title="Android JetPack">Android JetPack</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://j-a-g.github.io/2021/06/16/%E5%AD%A6%E4%B9%A0Android-Jetpack-Room/";
+    var disqus_url = "https://j-a-g.github.io/2021/06/16/%E5%AD%A6%E4%B9%A0Android-Jetpack-Room/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; JAG&#39;s Blog 2022 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="https://github.com/Kaijun/hexo-theme-huxblog">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="https://github.com/J-a-g/J-a-g.github.io">JAG</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=J-a-g&J-a-g.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://j-a-g.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

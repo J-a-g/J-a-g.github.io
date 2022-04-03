@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          Java线程池的运行原理 - JAG的博客 | JAG&#39;s Blog
+        
+    </title>
+
+    <link rel="canonical" href="https://j-a-g.github.io/2020/02/22/Java线程池的运行原理/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">JAG&#39;s Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#Java" title="Java">Java</a>
+                        
+                          <a class="tag" href="/tags/#Android" title="Android">Android</a>
+                        
+                    </div>
+                    <h1>Java线程池的运行原理</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Chengjian Su on
+                        2020-02-22
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="线程池的好处"><a href="#线程池的好处" class="headerlink" title="线程池的好处"></a>线程池的好处</h2><p>1.重用已经存在的线程，减少了线程的创建和销毁开销。<br>2.可有效控制最大并发的线程数，提高了系统资源的使用率避免很多竞争，避免了OOM、死锁等。</p>
+<h2 id="四种Java线程池功能及分析"><a href="#四种Java线程池功能及分析" class="headerlink" title="四种Java线程池功能及分析"></a>四种Java线程池功能及分析</h2><p>线程池都继承了ExecutorService的接口，所以他们都既有ExecutorService的生命周期方法：运行、关闭、终止。因为继承了ExecuterService接口，所以它在创建的时候就是处于运行状态，当线程没有任务执行时，就会进入关闭状态，只有调用了shutdown()的时候才是正式的终止了这个线程池。<br><strong>Executors工厂类提供我们的线程池一共有四种：</strong></p>
+<ul>
+<li>newCachedThreadPool创建一个可缓存线程池，如果线程池长度超过处理需要，可灵活回收空闲线程，若无可回收，则新建线程。</li>
+<li>newFixedThreadPool 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。</li>
+<li>newScheduledThreadPool 创建一个定长线程池，支持定时及周期性任务执行。</li>
+<li>newSingleThreadExecutor 创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。</li>
+</ul>
+<h2 id="参数属性介绍"><a href="#参数属性介绍" class="headerlink" title="参数属性介绍"></a>参数属性介绍</h2><p><strong>1.核心线程数corePoolSize：</strong>核心线程数量。提交一个任务的时候，会对线程池里面的当前存活线程数和这个corePoolSize进行比较，不同情况会有不同的操作。<br><strong>2.最大线程数maximumPoolSize：</strong>线程池所能创建的线程的最大的数量。<br><strong>3.空闲线程的超时时间KeepAliveTime：</strong>如果线程池当前线程数是大于corePoolSize,并且这些线程中是有空闲线程的，也就是说这些线程没有在执行任务，那么空闲时间超过keepAliveTime时，这些线程会被销毁，直到当前线程数等于corePoolSize，这时即使有空闲线程并且超时了也不会进行线程销毁。<br><strong>4.任务队列WorkQueue：</strong>这是一个阻塞队列，用于存储提交的任务。<br><strong>5.线程工厂threadFactory：</strong>线程池会使用这个工厂类来创建线程，用户也可以自己实现。<br><strong>6.任务的拒绝处理handler(RejectExecutionHandler)：</strong>在线程数已经达到了最大线程数，而且任务队列也满了之后，提交的任务会使用这个handler来处理，用户也可以自己实现。默认是抛出一个RejectExecutionException异常。</p>
+<h2 id="线程池运行原理"><a href="#线程池运行原理" class="headerlink" title="线程池运行原理"></a>线程池运行原理</h2><p><strong>当用户提交一个任务时，线程池内部是如何运行的</strong></p>
+<p>1.创建一个线程池，在还没有任务提交的时候，默认线程池里面是没有线程的。当然，也可以调用prestartCoreThread方法，来预先创建一个核心线程。</p>
+<p>2.<code>线程池里面还没有线程或者线程池里存活的线程数小于核心线程数corePoolSize时</code>，这时对于一个新提交的任务，线程池会创建一个线程去处理这个提交的任务。当线程池中存活的线程数小于等于核心线程数corePoolSize时，线程池里面的线程会一直存活着，就算空闲时间超过了keepAliveTime，线程也不会被销毁，而是一直阻塞在那里一直等待任务队列的任务来执行。</p>
+<p>3.<code>当线程池中存活的线程数已经等于corePoolSize了</code>，这时对于一个新提交的任务，会被放进任务队列workQueue排队等待执行。而之前创建的线程并不会被销毁，而是不断的去拿阻塞队列里面的任务，当任务队列为空时，线程会阻塞，直到有任务被放进任务队列中，线程拿到任务后继续执行，执行完了过后会继续去拿任务。这也是为什么线程池队列要用阻塞队列。</p>
+<p>4.<code>当线程池中存活的线程数已经等于corePoolSize了，并且任务队列也满了。这里假设maximumPoolSize &gt; corePoolSize(如果相等的话，就直接拒绝了)</code>。这时如果再来一个新的任务，线程池就会继续创建新的线程来处理新的任务，直到线程数达到maximumPoolSize，就不会再创建了。这些新创建的线程执行完了当前任务后，在任务队列里面还有任务的时候是不会销毁的，而是去任务队列拿任务出来执行。在当前线程数大于corePoolSize的情况下，线程执行完当前任务，会有一个判断当前线程是否需要销毁的逻辑，如果能从任务队列中拿到任务，那么继续执行；如果拿任务是阻塞(说明任务队列中没有任务了)，那么当空闲时间超过keepAliveTime时就直接返回null并销毁当前线程，直到线程池中的线程数等于corePoolSize，之后才不会进行线程销毁。</p>
+<p>5.<code>如果当前的线程数达到了maximumPoolSize，并且任务队列满了</code>。这时还有新任务过来，那就直接采用拒绝处理器进行处理。默认的处理器逻辑是抛出一个RejectExecutionException异常。你也可以指定其他的处理器，或者自定义一个拒绝处理器来实现拒绝逻辑的处理(比如将这些任务存储起来)。JDK提供了4种拒绝策略处理器：AbortPolicy(抛出一个异常，默认的)，DiscardPolicy(直接丢弃任务)，DiscardOldestPolicy(丢弃队列里最老的任务，将当前这个任务继续提交给线程池)，CallerRunsPolicy(交给线程池调用所有的线程进行处理)。</p>
+<p><img src="liucheng.png" alt="java-javascript"><br><small class="img-hint">线程池工作原理</small></p>
+<h2 id="newFixedThreadPool"><a href="#newFixedThreadPool" class="headerlink" title="newFixedThreadPool()"></a>newFixedThreadPool()</h2><p>Android中最常用到的线程池<br>fixedThreadPool(size) 只有一个参数size，就是线程池中最大可创建多少个线程<br>在实现上跟ThreadPoolExecutor类似fixedThreadPool简化了实现过程，把corePoolSize和maximumPoolSize的值都设为传入的size，并且设置keepAliveTime为0ms，然后采用的LinkedBlockingQueue队列，这个队列是链式结构，所以是无边界的，可以容纳无数个任务。<br>总结：比如我创建3个线程的fixedThreadPool，当3个都为活跃时，后面的任务会被加入无边界的链式队列，有空闲，就执行任务。</p>
+<h2 id="newCachedThreadPool"><a href="#newCachedThreadPool" class="headerlink" title="newCachedThreadPool()"></a>newCachedThreadPool()</h2><p>对比FixedThreadPool来说CacheThreadPool就要更快一些，因为这里的maximumPoolSize:线程允许最大线程数为MAX_VALUE(无限大),也就是说，只要有任务并且其他线程都在活跃，就会开启一个新的线程(因为没有上限)而当有空闲的线程的时候，就会调用空闲线程执行任务。</p>
+<h2 id="newScheduledThreadPool"><a href="#newScheduledThreadPool" class="headerlink" title="newScheduledThreadPool()"></a>newScheduledThreadPool()</h2><p>创建过程很简单，只要传入corePoolSize()线程的核心线程数。就可以开启这个线程池然后我们需要使用他的定时任务，就需要实现他的scheduleAtFixedRate方法，这个方法有4个参数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">public ScheduledFuture&lt;?&gt; <span class="function"><span class="title">scheduleAtFixedRate</span>(<span class="params">Runnable command, long initialDelay, long period, TimeUnit unit</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;Stub!&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>command：要执行的任务<br>initialDelay：每次任务执行的延迟，比如传入1，就会每隔1秒执行一次<br>period：执行周期<br>unit：第二个参数的时间单位</p>
+<h2 id="newSingleThreadExecutor"><a href="#newSingleThreadExecutor" class="headerlink" title="newSingleThreadExecutor()"></a>newSingleThreadExecutor()</h2><p>创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。现行大多数GUI程序都是单线程的。Android中单线程可用于数据库操作，文件操作，应用批量安装，应用批量删除等不适合并发但可能IO阻塞性及影响UI线程响应的操作。</p>
+<h2 id="线程池的使用过程中存在的一些问题以及解决方案"><a href="#线程池的使用过程中存在的一些问题以及解决方案" class="headerlink" title="线程池的使用过程中存在的一些问题以及解决方案"></a>线程池的使用过程中存在的一些问题以及解决方案</h2><p><strong>1.在一些存在流量高峰，一段时间内并发量很大，参数设置不当可能导致性能不佳，cpu负载过高，内存溢出，拒绝策略设置不当导致任务丢失或者执行失败等问题</strong><br>这些问题可以使用上面提到的自定义创建线程池，自行根据业务场景来设置线程池的参数，从而规避上述的一些问题</p>
+<p><strong>2.服务重启导致内存的任务队列中的任务全部丢失</strong><br>这种情况，如果业务场景是需要保证消息百分百不丢失，那就要在提交任务的时候，对任务做离线存储，在任务执行完过后，再将对于的离线存储的任务删除。服务重启后，需要起一个后台线程去加载一个离线存储的任务，提交到线程池去执行。</p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2020/03/05/什么是对象锁和类锁/" data-toggle="tooltip" data-placement="top" title="什么是对象锁和类锁">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2020/02/10/rxjava2-1/" data-toggle="tooltip" data-placement="top" title="Rxjava2原理解析">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Java" title="Java">Java</a>
+                        
+                          <a class="tag" href="/tags/#Android" title="Android">Android</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://j-a-g.github.io/2020/02/22/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/";
+    var disqus_url = "https://j-a-g.github.io/2020/02/22/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; JAG&#39;s Blog 2022 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="https://github.com/Kaijun/hexo-theme-huxblog">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="https://github.com/J-a-g/J-a-g.github.io">JAG</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=J-a-g&J-a-g.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://j-a-g.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          Retrofit2原理解析 - JAG的博客 | JAG&#39;s Blog
+        
+    </title>
+
+    <link rel="canonical" href="https://j-a-g.github.io/2020/04/13/Retrofit2原理解析/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">JAG&#39;s Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#Java" title="Java">Java</a>
+                        
+                          <a class="tag" href="/tags/#Android" title="Android">Android</a>
+                        
+                    </div>
+                    <h1>Retrofit2原理解析</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Chengjian Su on
+                        2020-04-13
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public interface GitHubService &#123;</span><br><span class="line">    @GET(<span class="string">&quot;users/&#123;user&#125;/repos&quot;</span>)</span><br><span class="line">    Call&lt;List&lt;<span class="built_in">String</span>&gt;&gt; listRepos(@Path(<span class="string">&quot;user&quot;</span>) <span class="built_in">String</span> user);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Retrofit retrofit = <span class="keyword">new</span> Retrofit.Builder()</span><br><span class="line">        .baseUrl(<span class="string">&quot;https://api.github.com/&quot;</span>)</span><br><span class="line">        .addConverterFactory(GsonConverterFactory.create())</span><br><span class="line">        .build();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">GitHubService service = retrofit.create(GitHubService.class);</span><br><span class="line">Call&lt;List&lt;<span class="built_in">String</span>&gt;&gt; repos = service.listRepos(<span class="string">&quot;octocat&quot;</span>);</span><br><span class="line">repos.enqueue(<span class="keyword">new</span> Callback&lt;List&lt;<span class="built_in">String</span>&gt;&gt;() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public <span class="keyword">void</span> <span class="function"><span class="title">onResponse</span>(<span class="params">Call&lt;List&lt;<span class="built_in">String</span>&gt;&gt; call, Response&lt;List&lt;<span class="built_in">String</span>&gt;&gt; response</span>)</span> &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    public <span class="keyword">void</span> <span class="function"><span class="title">onFailure</span>(<span class="params">Call&lt;List&lt;<span class="built_in">String</span>&gt;&gt; call, Throwable t</span>)</span> &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>上面使用中主要做了以下几件事：</p>
+<ul>
+<li>通过Retrofit.Builder()创建Retrofit。 </li>
+<li>调用Retrofit的create()方法将生成接口GitHubService的实例。 </li>
+<li>调用GitHubService的listRepos()方法返Call&lt;List<Repo>&gt;。 </li>
+<li>执行Call&lt;List<Repo>&gt;的enqueue方法在回调中处理返回的List<Repo>。</li>
+</ul>
+<h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><p><strong>Retrofit初始化Builder</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">Builder</span>(<span class="params">Platform platform</span>)</span> &#123;</span><br><span class="line">  <span class="built_in">this</span>.platform = platform;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public <span class="function"><span class="title">Builder</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">  <span class="built_in">this</span>(Platform.get());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private <span class="keyword">static</span> final Platform PLATFORM = findPlatform();</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> Platform <span class="function"><span class="title">get</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> PLATFORM;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private <span class="keyword">static</span> Platform <span class="function"><span class="title">findPlatform</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    Class.forName(<span class="string">&quot;android.os.Build&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (Build.VERSION.SDK_INT != <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> Android();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (ClassNotFoundException ignored) &#123;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    Class.forName(<span class="string">&quot;java.util.Optional&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> Java8();</span><br><span class="line">  &#125; <span class="keyword">catch</span> (ClassNotFoundException ignored) &#123;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> Platform();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里分析返回的是Android对象</p>
+<p><strong>再看一下retrofit的build方法</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">public Retrofit <span class="function"><span class="title">build</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (baseUrl == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;Base URL required.&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  okhttp3.Call.Factory callFactory = <span class="built_in">this</span>.callFactory;</span><br><span class="line">  <span class="keyword">if</span> (callFactory == <span class="literal">null</span>) &#123;</span><br><span class="line">    callFactory = <span class="keyword">new</span> OkHttpClient();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Executor callbackExecutor = <span class="built_in">this</span>.callbackExecutor;</span><br><span class="line">  <span class="keyword">if</span> (callbackExecutor == <span class="literal">null</span>) &#123;</span><br><span class="line">    callbackExecutor = platform.defaultCallbackExecutor();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Make a defensive copy of the adapters and add the default Call adapter.</span></span><br><span class="line">  List&lt;CallAdapter.Factory&gt; callAdapterFactories = <span class="keyword">new</span> ArrayList&lt;&gt;(<span class="built_in">this</span>.callAdapterFactories);</span><br><span class="line">  callAdapterFactories.add(platform.defaultCallAdapterFactory(callbackExecutor));</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Make a defensive copy of the converters.</span></span><br><span class="line">  List&lt;Converter.Factory&gt; converterFactories =</span><br><span class="line">      <span class="keyword">new</span> ArrayList&lt;&gt;(<span class="number">1</span> + <span class="built_in">this</span>.converterFactories.size());</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Add the built-in converter factory first. This prevents overriding its behavior but also</span></span><br><span class="line">  <span class="comment">// ensures correct behavior when using converters that consume all types.</span></span><br><span class="line">  converterFactories.add(<span class="keyword">new</span> BuiltInConverters());</span><br><span class="line">  converterFactories.addAll(<span class="built_in">this</span>.converterFactories);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> Retrofit(callFactory, baseUrl, unmodifiableList(converterFactories),</span><br><span class="line">      unmodifiableList(callAdapterFactories), callbackExecutor, validateEagerly);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>1.如果没有callFactory则new一个OkHttpClient对象，由源码可知如果OkHttpClient没有什么特殊要求的话，在初始化retrofit的时候client()方法其实可以不需要调用。<br>2.对callbackExecutor进行赋值，因为platform是Android，所以callbackExecutor=new MainThreadExecutor()，该对象的做用就是进行主线程切换</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Android</span> <span class="keyword">extends</span> <span class="title">Platform</span> </span>&#123;</span><br><span class="line">  @Override public Executor <span class="function"><span class="title">defaultCallbackExecutor</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> MainThreadExecutor();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  @Override CallAdapter.Factory <span class="function"><span class="title">defaultCallAdapterFactory</span>(<span class="params">@Nullable Executor callbackExecutor</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (callbackExecutor == <span class="literal">null</span>) <span class="keyword">throw</span> <span class="keyword">new</span> AssertionError();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ExecutorCallAdapterFactory(callbackExecutor);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MainThreadExecutor</span> <span class="title">implements</span> <span class="title">Executor</span> </span>&#123;</span><br><span class="line">    private final Handler handler = <span class="keyword">new</span> Handler(Looper.getMainLooper());</span><br><span class="line"></span><br><span class="line">    @Override public <span class="keyword">void</span> <span class="function"><span class="title">execute</span>(<span class="params">Runnable r</span>)</span> &#123;</span><br><span class="line">      handler.post(r);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.往callAdapterFactories里面添加一个CallAdapter.Factory对象，该对象为ExecutorCallAdapterFactory</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CallAdapter.Factory <span class="function"><span class="title">defaultCallAdapterFactory</span>(<span class="params">@Nullable Executor callbackExecutor</span>)</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (callbackExecutor != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ExecutorCallAdapterFactory(callbackExecutor);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> DefaultCallAdapterFactory.INSTANCE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>4.往converterFactories中添加一个BuiltInConverters对象</p>
+<p><strong>再看一下retrofit的create方法</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">public &lt;T&gt; T <span class="function"><span class="title">create</span>(<span class="params">final Class&lt;T&gt; service</span>)</span> &#123;</span><br><span class="line">  Utils.validateServiceInterface(service);</span><br><span class="line">  <span class="keyword">if</span> (validateEagerly) &#123;</span><br><span class="line">    eagerlyValidateMethods(service);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (T) <span class="built_in">Proxy</span>.newProxyInstance(service.getClassLoader(), <span class="keyword">new</span> Class&lt;?&gt;[] &#123; service &#125;,</span><br><span class="line">      <span class="keyword">new</span> <span class="function"><span class="title">InvocationHandler</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        private final Platform platform = Platform.get();</span><br><span class="line"></span><br><span class="line">        @Override public <span class="built_in">Object</span> invoke(<span class="built_in">Object</span> proxy, Method method, @Nullable <span class="built_in">Object</span>[] args)</span><br><span class="line">            throws Throwable &#123;</span><br><span class="line">          Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;create invoke--&gt;&quot;</span> );</span><br><span class="line">          <span class="comment">// If the method is a method from Object then defer to normal invocation.</span></span><br><span class="line">          <span class="keyword">if</span> (method.getDeclaringClass() == <span class="built_in">Object</span>.class) &#123;</span><br><span class="line">            <span class="keyword">return</span> method.invoke(<span class="built_in">this</span>, args);</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">if</span> (platform.isDefaultMethod(method)) &#123;</span><br><span class="line">            <span class="keyword">return</span> platform.invokeDefaultMethod(method, service, proxy, args);</span><br><span class="line">          &#125;</span><br><span class="line">          ServiceMethod&lt;<span class="built_in">Object</span>, <span class="built_in">Object</span>&gt; serviceMethod =</span><br><span class="line">              (ServiceMethod&lt;<span class="built_in">Object</span>, <span class="built_in">Object</span>&gt;) loadServiceMethod(method);</span><br><span class="line">          OkHttpCall&lt;<span class="built_in">Object</span>&gt; okHttpCall = <span class="keyword">new</span> OkHttpCall&lt;&gt;(serviceMethod, args);</span><br><span class="line">          <span class="keyword">return</span> serviceMethod.adapt(okHttpCall);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>//create方法传入一个接口，并通过动态代码的方式来创建这个接口实例并返回。<br>以下面接口为例，当调用listRepos时，动态代理会进行拦截，然后掉到invoke方法中。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@GET(<span class="string">&quot;users/&#123;user&#125;/repos&quot;</span>)</span><br><span class="line">Call&lt;List&lt;<span class="built_in">String</span>&gt;&gt; listRepos(@Path(<span class="string">&quot;user&quot;</span>) <span class="built_in">String</span> user);</span><br></pre></td></tr></table></figure>
+<p>invoke中主要做了3件事<br>1.loadServiceMethod():判断下当前serviceMethodCache中有没有指定的method，如果没有就创建个ServiceMethod对象。ServiceMethod这个类可以理解成网络参数（如GET还是POST，请求参数之类）、执行的封装对象。<br>2.初始化OKHttpCall<br>3.调用serviceMethod.adapt()方法<br>下面主要看一下第1，3点的源码:</p>
+<p><strong>loadServiceMethod()</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ServiceMethod&lt;?, ?&gt; <span class="function"><span class="title">loadServiceMethod</span>(<span class="params">Method method</span>)</span> &#123;</span><br><span class="line">  ServiceMethod&lt;?, ?&gt; result = serviceMethodCache.get(method);</span><br><span class="line">  <span class="keyword">if</span> (result != <span class="literal">null</span>) <span class="keyword">return</span> result;</span><br><span class="line"></span><br><span class="line">  synchronized (serviceMethodCache) &#123;</span><br><span class="line">    result = serviceMethodCache.get(method);</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="literal">null</span>) &#123;</span><br><span class="line">      result = <span class="keyword">new</span> ServiceMethod.Builder&lt;&gt;(<span class="built_in">this</span>, method).build();</span><br><span class="line">      serviceMethodCache.put(method, result);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>判断下当前serviceMethodCache中有没有指定的method，如果没有就创建个ServiceMethod对象。再看一下<strong>如何创建ServiceMethod对象</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="title">Builder</span>(<span class="params">Retrofit retrofit, Method method</span>)</span> &#123;</span><br><span class="line">      <span class="built_in">this</span>.retrofit = retrofit;</span><br><span class="line">      <span class="built_in">this</span>.method = method;</span><br><span class="line">      <span class="built_in">this</span>.methodAnnotations = method.getAnnotations();</span><br><span class="line">      <span class="built_in">this</span>.parameterTypes = method.getGenericParameterTypes();</span><br><span class="line">      <span class="built_in">this</span>.parameterAnnotationsArray = method.getParameterAnnotations();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public ServiceMethod <span class="function"><span class="title">build</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">      callAdapter = createCallAdapter();<span class="comment">//这里返回的就是ExecutorCallAdapterFactory</span></span><br><span class="line">      ...省略...</span><br><span class="line">      <span class="comment">//通过之前传入的gson转换器工厂创建gson的转换器</span></span><br><span class="line">      responseConverter = createResponseConverter();</span><br><span class="line"></span><br><span class="line">      <span class="keyword">for</span> (Annotation annotation : methodAnnotations) &#123;</span><br><span class="line">        <span class="comment">//就是对每个注解进行解析，将注解转换成网络请求所需的各种配置,</span></span><br><span class="line">        <span class="comment">//一开始的@POST和@Body便是在这个方法里面进行解析的</span></span><br><span class="line">        parseMethodAnnotation(annotation);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      ...省略...</span><br><span class="line"></span><br><span class="line">      <span class="comment">//将所有的注解归类组成一个ParameterHandler的数组</span></span><br><span class="line">      int parameterCount = parameterAnnotationsArray.length;</span><br><span class="line">      parameterHandlers = <span class="keyword">new</span> ParameterHandler&lt;?&gt;[parameterCount];</span><br><span class="line">      <span class="keyword">for</span> (int p = <span class="number">0</span>; p &lt; parameterCount; p++) &#123;</span><br><span class="line">        Type parameterType = parameterTypes[p];</span><br><span class="line">        <span class="keyword">if</span> (Utils.hasUnresolvableType(parameterType)) &#123;</span><br><span class="line">          <span class="keyword">throw</span> parameterError(p, <span class="string">&quot;Parameter type must not include a type variable or wildcard: %s&quot;</span>,</span><br><span class="line">              parameterType);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Annotation[] parameterAnnotations = parameterAnnotationsArray[p];</span><br><span class="line">        <span class="keyword">if</span> (parameterAnnotations == <span class="literal">null</span>) &#123;</span><br><span class="line">          <span class="keyword">throw</span> parameterError(p, <span class="string">&quot;No Retrofit annotation found.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        parameterHandlers[p] = parseParameter(p, parameterType, parameterAnnotations);</span><br><span class="line">      &#125;</span><br><span class="line">      ...省略...</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> ServiceMethod&lt;&gt;(<span class="built_in">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>总之这一步主要做的是完成网络参数的解析和配置，为后面的执行和处理做准备。</p>
+<p><strong>调用serviceMethod.adapt()方法</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">T <span class="function"><span class="title">adapt</span>(<span class="params">Call&lt;R&gt; call</span>)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> callAdapter.adapt(call);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的callAapter就是ExecutorCallAdapterFactory，看一下ExecutorCallAdapterFactory的adapt做了什么</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@Override public Call&lt;<span class="built_in">Object</span>&gt; <span class="function"><span class="title">adapt</span>(<span class="params">Call&lt;<span class="built_in">Object</span>&gt; call</span>)</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> ExecutorCallbackCall&lt;&gt;(callbackExecutor, call);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建一个ExecutorCallbackCall对象，参数分别对应前面的MainThreadExecutor，和动态代理的invoke方法中创建的okHttpCall由此可以知道，Call&lt;List<String>&gt; repos = service.listRepos(“octocat”);repos实际就是ExecutorCallbackCall对象。</p>
+<p><strong>调用repos.enqueue()方法</strong><br>开始请求接口实际是调用到了ExecutorCallbackCall的enqueue()方法中代码如下:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">@Override public <span class="keyword">void</span> <span class="function"><span class="title">enqueue</span>(<span class="params">final Callback&lt;T&gt; callback</span>)</span> &#123;</span><br><span class="line">  checkNotNull(callback, <span class="string">&quot;callback == null&quot;</span>);</span><br><span class="line"></span><br><span class="line">  delegate.enqueue(<span class="keyword">new</span> Callback&lt;T&gt;() &#123;</span><br><span class="line">    @Override public <span class="keyword">void</span> <span class="function"><span class="title">onResponse</span>(<span class="params">Call&lt;T&gt; call, final Response&lt;T&gt; response</span>)</span> &#123;</span><br><span class="line">      callbackExecutor.execute(<span class="keyword">new</span> <span class="function"><span class="title">Runnable</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        @Override public <span class="keyword">void</span> <span class="function"><span class="title">run</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (delegate.isCanceled()) &#123;</span><br><span class="line">            <span class="comment">// Emulate OkHttp&#x27;s behavior of throwing/delivering an IOException on cancellation.</span></span><br><span class="line">            callback.onFailure(ExecutorCallbackCall.this, <span class="keyword">new</span> IOException(<span class="string">&quot;Canceled&quot;</span>));</span><br><span class="line">          &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            callback.onResponse(ExecutorCallbackCall.this, response);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Override public <span class="keyword">void</span> <span class="function"><span class="title">onFailure</span>(<span class="params">Call&lt;T&gt; call, final Throwable t</span>)</span> &#123;</span><br><span class="line">      callbackExecutor.execute(<span class="keyword">new</span> <span class="function"><span class="title">Runnable</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        @Override public <span class="keyword">void</span> <span class="function"><span class="title">run</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">          callback.onFailure(ExecutorCallbackCall.this, t);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中callbackExecutor为MainThreadExecutor，delegate为动态代理的invoke方法中创建的okHttpCall对象，所以是通过okHttpCall完成了网络请求并返回数据结果，并通过<br>callbackExecutor.execute（）将线程切换回主线程，并将数据结果回调给最外层的接口
+             </p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2020/05/01/Fragment懒加载/" data-toggle="tooltip" data-placement="top" title="Fragment懒加载">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2020/03/15/equals和-的区别/" data-toggle="tooltip" data-placement="top" title="equals和==的区别">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Java" title="Java">Java</a>
+                        
+                          <a class="tag" href="/tags/#Android" title="Android">Android</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://j-a-g.github.io/2020/04/13/Retrofit2%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90/";
+    var disqus_url = "https://j-a-g.github.io/2020/04/13/Retrofit2%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; JAG&#39;s Blog 2022 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="https://github.com/Kaijun/hexo-theme-huxblog">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="https://github.com/J-a-g/J-a-g.github.io">JAG</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=J-a-g&J-a-g.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://j-a-g.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

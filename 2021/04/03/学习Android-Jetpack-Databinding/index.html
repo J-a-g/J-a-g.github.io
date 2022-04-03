@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          学习Android Jetpack:Databinding - JAG的博客 | JAG&#39;s Blog
+        
+    </title>
+
+    <link rel="canonical" href="https://j-a-g.github.io/2021/04/03/学习Android-Jetpack-Databinding/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">JAG&#39;s Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#Android JetPack" title="Android JetPack">Android JetPack</a>
+                        
+                    </div>
+                    <h1>学习Android Jetpack:Databinding</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Chengjian Su on
+                        2021-04-03
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>数据绑定库(<code>DataBinding</code>)可以让我们声明式的将布局中的界面组件绑定到应用中的数据源。</p>
+</blockquote>
+<h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/android/databinding-samples">https://github.com/android/databinding-samples</a><br>文档地址：<a target="_blank" rel="noopener" href="https://developer.android.com/topic/libraries/data-binding">https://developer.android.com/topic/libraries/data-binding</a></p>
+<p>文档的内容很丰富，但是用些点介绍的有些简单一笔带过了，所以下面的介绍我会把认为重要的详细的一下，而有些内容我也就不做说明了。下面使用的Sample内容参考<a target="_blank" rel="noopener" href="https://github.com/android/databinding-samples">官方项目Sample</a>,也会根据实际情况添加一些功能，用于调试说明</p>
+<h2 id="Sameple展示"><a href="#Sameple展示" class="headerlink" title="Sameple展示"></a>Sameple展示</h2><p>它的效果大概是这样：<br><img src="ezgif.com-gif-maker.gif" alt="java-javascript"><br>项目地址：<a target="_blank" rel="noopener" href="https://github.com/J-a-g/GunDom/tree/navigation">https://github.com/J-a-g/GunDom/tree/navigation</a></p>
+<h2 id="使用入门"><a href="#使用入门" class="headerlink" title="使用入门"></a>使用入门</h2><p>在需要使用<code>DataBinding</code>模块的<code>build.gradle</code>文件中添加<code>dataBinding</code>元素：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">android &#123;</span><br><span class="line">    ...</span><br><span class="line">    dataBinding &#123;</span><br><span class="line">        enabled = <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：即使应用模块不直接使用数据绑定，也必须为依赖于使用数据绑定的库的应用模块配置数据绑定。也就是说如果<code>app</code>依赖的<code>module</code>中使用了<code>DataBinding</code>那么<code>app</code> 中也需要配置<code>dataBinding = true</code>。不然就会报错<code>NoClassDefFoundError</code>。</p>
+</blockquote>
+<h5 id="小技巧"><a href="#小技巧" class="headerlink" title="小技巧"></a>小技巧</h5><p><strong>快速生成DataBinding的layout布局</strong></p>
+<p>输入光标放到布局最外层，执行快捷键<code>alt + enter</code>选中<code>Covert to data binding layout</code>选项即可生成相应布局,如图所示<br><img src="img01.jpg" alt="java-javascript"></p>
+<h2 id="布局和绑定表达式"><a href="#布局和绑定表达式" class="headerlink" title="布局和绑定表达式"></a>布局和绑定表达式</h2><p>数据绑定布局文件和普通的布局文件略有不同，以根标记<code>layout</code>开头，后跟<code>data</code>元素和<code>view</code>根元素。如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span>?&gt;</span><br><span class="line">&lt;layout xmlns:android=<span class="string">&quot;http://schemas.android.com/apk/res/android&quot;</span></span><br><span class="line">    xmlns:app=<span class="string">&quot;http://schemas.android.com/apk/res-auto&quot;</span></span><br><span class="line">    xmlns:tools=<span class="string">&quot;http://schemas.android.com/tools&quot;</span></span><br><span class="line">    &gt;</span><br><span class="line"></span><br><span class="line">    &lt;data&gt;</span><br><span class="line"></span><br><span class="line">        &lt;variable</span><br><span class="line">            name=<span class="string">&quot;user&quot;</span></span><br><span class="line">            type=<span class="string">&quot;com.yin.mvvmdemo.data.ObservableFieldProfile&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">        &lt;<span class="keyword">import</span> type=<span class="string">&quot;com.yin.mvvmdemo.R&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">    &lt;/data&gt;</span><br><span class="line"></span><br><span class="line">    &lt;androidx.constraintlayout.widget.ConstraintLayout...&gt;</span><br><span class="line"></span><br><span class="line">&lt;/layout&gt;</span><br></pre></td></tr></table></figure>
+<p><code>&lt;data&gt;&lt;data&gt;</code>中的<code>user</code>变量描述了可在此布局中使用的属性,也就是值数据源。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;variable</span><br><span class="line">    name=<span class="string">&quot;user&quot;</span></span><br><span class="line">    type=<span class="string">&quot;com.yin.mvvmdemo.data.ObservableFieldProfile&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
+<p>布局中的表达式使用<code>@&#123;&#125;</code>语法写入特性属性中。在这里，<code>TextView</code>文本被设置为<code>user</code>变量的<code>name</code>属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;TextView</span><br><span class="line">    ...</span><br><span class="line">    android:text=<span class="string">&quot;@&#123;user.name&#125;&quot;</span></span><br><span class="line">    /&gt;</span><br></pre></td></tr></table></figure>
+<h5 id="数据对象"><a href="#数据对象" class="headerlink" title="数据对象"></a>数据对象</h5><p>Sample中使用到数据对象，ObservableXX下面在做介绍</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">data <span class="class"><span class="keyword">class</span> <span class="title">ObservableFieldProfile</span>(</span></span><br><span class="line">    var name: String,//名字</span><br><span class="line">    val lastName: ObservableField&lt;<span class="built_in">String</span>&gt;,<span class="comment">//姓氏</span></span><br><span class="line">    val likes: ObservableInt,<span class="comment">//点赞数</span></span><br><span class="line">    val url: ObservableField&lt;<span class="built_in">String</span>&gt;<span class="comment">//图片url</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>用于<code>android:text</code>特性的表达式<code>@&#123;user.firstName&#125;</code>访问前一个类中的<code>firstName</code>字段和后一个类中的<code>getFirstName()</code>方法</p>
+<h5 id="绑定数据"><a href="#绑定数据" class="headerlink" title="绑定数据"></a>绑定数据</h5><p>系统会为每个布局文件生成一个绑定类。默认情况下，类名称基于布局文件的名称，它会转换为<code>Pascal</code>大小写形式并在末尾添加 Binding 后缀。以上布局文件名为<code>activity_main.xml</code>，因此生成的对应类为<code>ActivityMainBinding</code>。此类包含从布局属性（例如，user 变量）到布局视图的所有绑定，并且知道如何为绑定表达式指定值。</p>
+<p>方式一:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">val user: ObservableFieldProfile = ObservableFieldProfile(</span><br><span class="line">    <span class="string">&quot;大强&quot;</span>,</span><br><span class="line">    ObservableField(<span class="string">&quot;苏&quot;</span>),</span><br><span class="line">    ObservableInt(<span class="number">0</span>),</span><br><span class="line">    ObservableField(<span class="string">&quot;http://192.168.1.104/TestDemo2/img_test.jpg&quot;</span>)</span><br><span class="line">)</span><br><span class="line">override fun <span class="function"><span class="title">onCreate</span>(<span class="params">savedInstanceState: Bundle?</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>.onCreate(savedInstanceState)</span><br><span class="line">    val binding: ActivityBasicBinding =</span><br><span class="line">        DataBindingUtil.setContentView(<span class="built_in">this</span>, R.layout.activity_basic)</span><br><span class="line">    binding.user = user</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>方式二：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">val user: ObservableFieldProfile = ObservableFieldProfile(</span><br><span class="line">    <span class="string">&quot;大强&quot;</span>,</span><br><span class="line">    ObservableField(<span class="string">&quot;苏&quot;</span>),</span><br><span class="line">    ObservableInt(<span class="number">0</span>),</span><br><span class="line">    ObservableField(<span class="string">&quot;http://192.168.1.104/TestDemo2/img_test.jpg&quot;</span>)</span><br><span class="line">)</span><br><span class="line">override fun <span class="function"><span class="title">onCreate</span>(<span class="params">savedInstanceState: Bundle?</span>)</span> &#123;</span><br><span class="line">    <span class="built_in">super</span>.onCreate(savedInstanceState)</span><br><span class="line">    val binding = ActivityBasicBinding.inflate(layoutInflater)</span><br><span class="line">    setContentView(binding.root)</span><br><span class="line">    binding.user = user</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><span id="tag1"></span><br><code>binding.user = user</code>此时就完成了布局和数据的绑定，此时如果修改<code>ObservableFieldProfile</code>的<code>lastName、like、url</code>等值后，就会直接更新到UI中，但是修改<code>name</code>值并不会更新UI，为什么？<a href="#ObservableField_tag">下面再进行说明</a></p>
+<h5 id="表达式语言"><a href="#表达式语言" class="headerlink" title="表达式语言"></a>表达式语言</h5><p><strong>常见功能</strong><br>表达式语言与托管代码中的表达式非常相似。您可以在表达式语言中使用以下运算符和关键字：</p>
+<ul>
+<li>算术运算符 + - / * %</li>
+<li>字符串连接运算符 +</li>
+<li>逻辑运算符 &amp;&amp; ||</li>
+<li>二元运算符 &amp; | ^</li>
+<li>一元运算符 + - ! ~</li>
+<li>移位运算符 &gt;&gt; &gt;&gt;&gt; &lt;&lt;</li>
+<li>比较运算符 == &gt; &lt; &gt;= &lt;=（请注意，&lt; 需要转义为 &lt;）</li>
+<li>instanceof</li>
+<li>分组运算符 ()</li>
+<li>字面量运算符 - 字符、字符串、数字、null</li>
+<li>类型转换</li>
+<li>方法调用</li>
+<li>字段访问</li>
+<li>数组访问 []</li>
+<li>三元运算符 ?:</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">android:text=<span class="string">&quot;@&#123;String.valueOf(index + 1)&#125;&quot;</span></span><br><span class="line">    android:visibility=<span class="string">&quot;@&#123;age &gt; 13 ? View.GONE : View.VISIBLE&#125;&quot;</span></span><br><span class="line">    android:transitionName=<span class="string">&#x27;@&#123;&quot;image_&quot; + id&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+<p><strong>缺少的运算</strong><br>您可以在托管代码中使用的表达式语法中缺少以下运算：</p>
+<ul>
+<li>this</li>
+<li>super</li>
+<li>new</li>
+<li>显式泛型调用</li>
+</ul>
+<p><strong>视图引用</strong></p>
+<p>表达式可以通过以下语法按 ID 引用布局中的其他视图,如<code>EditText</code>改变内容后，直接再<code>TextView</code>中显示，就可以通过这个方式进行设置，在Sample中也有这样的应用，可以直接看源码，在<code>fragment_two_way.xml</code>中</p>
+<blockquote>
+<p>注意：绑定类将 ID 转换为驼峰式大小写。</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&lt;EditText</span><br><span class="line">        android:id=<span class="string">&quot;@+id/example_text&quot;</span></span><br><span class="line">        android:layout_height=<span class="string">&quot;wrap_content&quot;</span></span><br><span class="line">        android:layout_width=<span class="string">&quot;match_parent&quot;</span>/&gt;</span><br><span class="line">    &lt;TextView</span><br><span class="line">        android:id=<span class="string">&quot;@+id/example_output&quot;</span></span><br><span class="line">        android:layout_width=<span class="string">&quot;wrap_content&quot;</span></span><br><span class="line">        android:layout_height=<span class="string">&quot;wrap_content&quot;</span></span><br><span class="line">        android:text=<span class="string">&quot;@&#123;exampleText.text&#125;&quot;</span>/&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>集合</strong></p>
+<p>为方便起见，可使用 [] 运算符访问常见集合，例如数组、列表、稀疏列表和映射。 这部分内容在Sample中并没有应用这里不做说明，<a target="_blank" rel="noopener" href="https://developer.android.com/topic/libraries/data-binding/expressions#collections">详见官方文档-集合</a></p>
+<h5 id="事件处理"><a href="#事件处理" class="headerlink" title="事件处理"></a>事件处理</h5><p>通过数据绑定，您可以编写从视图分派的表达式处理事件（例如，<code>onClick()</code>方法）。事件特性名称由监听器方法的名称确定，但有一些例外情况。例如，<code>View.OnClickListener</code>有一个<code>onClick()</code>方法，所以该事件的特性为<code>android:onClick</code>。</p>
+<p>Sample中主要使用到的方式如下,主要集中在<code>fragment_basic.xml</code>中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;Button</span><br><span class="line">    ...</span><br><span class="line">    android:onClick=<span class="string">&quot;@&#123;()-&gt;user.onCheckUrl()&#125;&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&lt;Button</span><br><span class="line">    ...</span><br><span class="line">    android:onClick=<span class="string">&quot;@&#123;(view)-&gt;user.onLike(view)&#125;&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">&lt;Button</span><br><span class="line">    ...</span><br><span class="line">    android:onClick=<span class="string">&quot;@&#123;user::onCheckName&#125;&quot;</span> /&gt;            </span><br></pre></td></tr></table></figure>
+<h5 id="导入、变量和包含"><a href="#导入、变量和包含" class="headerlink" title="导入、变量和包含"></a>导入、变量和包含</h5><p>数据绑定库提供了诸如导入、变量和包含等功能。通过导入功能，您可以轻松地在布局文件中引用类。通过变量功能，您可以描述可在绑定表达式中使用的属性。通过包含功能，您可以在整个应用中重复使用复杂的布局。<br>这部分官方说明比较详细没有歧义所以不在赘述,<a target="_blank" rel="noopener" href="https://developer.android.com/topic/libraries/data-binding/expressions#imports_variables_and_includes">详见官方文档-导入、变量和包含</a></p>
+<h2 id="使用可观察的数据对象"><a href="#使用可观察的数据对象" class="headerlink" title="使用可观察的数据对象"></a>使用可观察的数据对象</h2><p><span id="ObservableField_tag"></span><br>可观察性是指一个对象将其数据变化告知其他对象的能力。通过数据绑定库，您可以让对象、字段或集合变为可观察。<br>任何 plain-old对象都可用于数据绑定，但修改对象不会自动使界面更新。通过数据绑定，数据对象可在其数据发生更改时通知其他对象，即监听器。可观察类有三种不同类型：对象、字段和集合。<strong>当其中一个可观察数据对象绑定到界面并且该数据对象的属性发生更改时，界面会自动更新。</strong><a href="#tag1">解释上面遗留问题</a></p>
+<h5 id="可观察字段"><a href="#可观察字段" class="headerlink" title="可观察字段"></a>可观察字段</h5><p>在创建实现<code>Observable</code>接口的类时要完成一些操作，但如果您的类只有少数几个属性，这样操作的意义不大。在这种情况下，您可以使用通用<code>Observable</code> 类和以下特定于基元的类，将字段设为可观察字段：</p>
+<ul>
+<li>ObservableBoolean</li>
+<li>ObservableByte</li>
+<li>ObservableChar</li>
+<li>ObservableShort</li>
+<li>ObservableInt</li>
+<li>ObservableLong</li>
+<li>ObservableFloat</li>
+<li>ObservableDouble</li>
+<li>ObservableParcelable<br>可观察字段是具有单个字段的自包含可观察对象。原语版本避免在访问操作期间封箱和开箱。如需使用此机制，请采用 Java 编程语言创建 public final 属性，<strong>或在<code>Kotlin</code> 中创建只读属性</strong>，如以下示例所示：<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</span><br><span class="line">      val firstName = ObservableField&lt;<span class="built_in">String</span>&gt;()</span><br><span class="line">      val lastName = ObservableField&lt;<span class="built_in">String</span>&gt;()</span><br><span class="line">      val age = ObservableInt()</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+如需访问字段值，请使用 set() 和 get() 访问器方法,在<a href="#tag1">上面遗留问题</a>中，<code>name</code>因为只是普通的<code>String</code>字段所以修改后，并没有更新到UI到，而其他字段都是<code>可观察字段</code>所以其他值修改后会更新到UI上</li>
+</ul>
+<p><strong>可观察集合</strong><br>略，Sample中没有使用到不做详细说明，<a target="_blank" rel="noopener" href="https://developer.android.com/topic/libraries/data-binding/observability#observable_Collections">详见官方文档-可观察集合</a></p>
+<p><strong>可观察对象</strong></p>
+<p>实现<code>Observable</code>接口的类允许注册监听器，以便它们接收有关可观察对象的属性更改的通知。</p>
+<p><code>Observable</code>接口具有添加和移除监听器的机制，但何时发送通知必须由您决定。为便于开发，数据绑定库提供了用于实现监听器注册机制的<code>BaseObservable</code>类。实现<code>BaseObservable</code>的数据类负责在属性更改时发出通知。具体操作过程是向<code>getter</code>分配<code>Bindable</code>注释，然后在<code>setter</code>中调用<code>notifyPropertyChanged()</code>方法，Sample中代码如下所示：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">class TwoWayData : BaseObservable() &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> click: <span class="built_in">Boolean</span> = <span class="literal">false</span></span><br><span class="line">        @Bindable <span class="function"><span class="title">get</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> field</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="title">set</span>(<span class="params">value: <span class="built_in">Boolean</span></span>)</span> &#123;</span><br><span class="line">            field = value</span><br><span class="line">            notifyPropertyChanged(BR.click)<span class="comment">//更新xml中的UI</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> currentTime: Long = System.currentTimeMillis()</span><br><span class="line">        @Bindable <span class="function"><span class="title">get</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> field</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="title">set</span>(<span class="params">value</span>)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (field != value) &#123;</span><br><span class="line">                field = value</span><br><span class="line">                <span class="keyword">if</span> (value &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    notifyPropertyChanged(BR.currentTime)<span class="comment">//更新xml中的UI</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//BR类：数据绑定在模块包中生成一个名为 BR 的类，该类包含用于数据绑定的资源的 ID。在编译期间，Bindable 注释会在 BR 类文件中生成一个条目。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="绑定适配器-Binding-adapters"><a href="#绑定适配器-Binding-adapters" class="headerlink" title="绑定适配器 Binding adapters"></a>绑定适配器 Binding adapters</h2><p>简单的来说就是将代码中设置视图属性的逻辑代码，可以通过xml中的属性配置进行操作，如<code>setText()</code>我们通过<code>android:test=&quot;&quot;</code>就可以显示了，那我们设想一下一个ImageView，我们要加载网络图片并设置占位图这个功能如何实现？<a href="#tag2">下面进行说明</a></p>
+<p><strong>自动选择方法</strong></p>
+<p>即使不存在具有给定名称的特性，数据绑定也会起作用。然后，您可以使用数据绑定为任何 setter 创建特性。例如，支持类 DrawerLayout 没有任何特性，但有很多 setter。以下布局会自动将 setScrimColor(int) 和 setDrawerListener(DrawerListener) 方法分别用作 app:scrimColor 和 app:drawerListener 特性的 setter：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;android.support.v4.widget.DrawerLayout</span><br><span class="line">        android:layout_width=<span class="string">&quot;wrap_content&quot;</span></span><br><span class="line">        android:layout_height=<span class="string">&quot;wrap_content&quot;</span></span><br><span class="line">        app:scrimColor=<span class="string">&quot;@&#123;@color/scrim&#125;&quot;</span></span><br><span class="line">        app:drawerListener=<span class="string">&quot;@&#123;fragment.drawerListener&#125;&quot;</span>&gt;    </span><br></pre></td></tr></table></figure>
+<p><strong>指定自定义方法名称</strong></p>
+<p>一些属性具有名称不符的 <code>setter</code> 方法。在这些情况下，某个特性可能会使用 <code>BindingMethods</code> 注释与 <code>setter</code> 相关联。注释与类一起使用，可以包含多个 <code>BindingMethod</code> 注释，每个注释对应一个重命名的方法。绑定方法是可添加到应用中任何类的注释。在以下示例中，<code>app:srcTest</code> 属性与 setImageResource() 方法相关联：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@BindingMethods(</span><br><span class="line">        BindingMethod(type = ImageView::<span class="class"><span class="keyword">class</span>,</span></span><br><span class="line"><span class="class">                <span class="title">attribute</span> </span>= <span class="string">&quot;app:srcTest&quot;</span>,</span><br><span class="line">                method = <span class="string">&quot;setImageResource&quot;</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> &lt;ImageView</span><br><span class="line">            ...</span><br><span class="line">            app:srcTest=<span class="string">&quot;@&#123;user.likes &amp;lt; 4 ? R.drawable.ic_person_black_96dp : R.drawable.ic_whatshot_black_96dp &#125;&quot;</span>/&gt;</span><br><span class="line">            <span class="comment">//这里的设置，就相当于在代码中执行setImageResource方法</span></span><br></pre></td></tr></table></figure>
+<p><strong>提供自定义逻辑</strong><br><span id="tag2"></span><br>一些属性需要自定义绑定逻辑，这里就来解决上面通过通过xml中的属性来加载网络图片和设置占位符了</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@BindingAdapter(<span class="string">&quot;url&quot;</span>, <span class="string">&quot;error&quot;</span>)</span><br><span class="line">@JvmStatic</span><br><span class="line">fun <span class="function"><span class="title">loadImage</span>(<span class="params">view: ImageView, url: <span class="built_in">String</span>, error: Drawable</span>)</span> &#123;</span><br><span class="line">    Glide.with(view).load(url).placeholder(error).into(view)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&lt;ImageView</span><br><span class="line">        ...</span><br><span class="line">        error=<span class="string">&quot;@&#123;@drawable/ic_baseline_error_outline_24&#125;&quot;</span></span><br><span class="line">        url=<span class="string">&quot;@&#123;user.url&#125;&quot;</span></span><br><span class="line">         /&gt;</span><br><span class="line"><span class="comment">//设置url、占位图，并通过Glide加载显示在对应的ImageView上</span></span><br></pre></td></tr></table></figure>
+<p>参数类型非常重要。第一个参数用于确定与特性关联的视图类型，即这个属性是配置在那个控件上的，第二个参数用于确定在给定特性的绑定表达式中接受的类型。<br>如果您希望在设置了任意属性时调用适配器，则可以将适配器的可选 <code>requireAll</code> 标志设置为 <code>false</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">@BindingAdapter(value = [<span class="string">&quot;url&quot;</span>, <span class="string">&quot;error&quot;</span>], requireAll = <span class="literal">false</span>)</span><br><span class="line">    @JvmStatic</span><br><span class="line">    fun <span class="function"><span class="title">loadImage</span>(<span class="params">view: ImageView, url: <span class="built_in">String</span>, error: Drawable</span>)</span> &#123;</span><br><span class="line">        Glide.with(view).load(url).placeholder(error).into(view)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>绑定适配器方法可以选择性在处理程序中使用旧值。同时获取旧值和新值的方法应该先为属性声明所有旧值，然后再声明新值。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">//方法的第一个参数是属性相关联的 View，第二个参数是属性的旧值，第三个参数是属性的新值。当一个自定义适配器只有一个属性，但有三个参数，且第二个和第三个参数类型一致时就会采用这种新旧值的规则。</span></span><br><span class="line">@BindingAdapter(<span class="string">&quot;imageUrl&quot;</span>)</span><br><span class="line">@JvmStatic</span><br><span class="line">fun <span class="function"><span class="title">loadImageUrl</span>(<span class="params">view: ImageView, oldUrl: <span class="built_in">String</span>?, newUrl: <span class="built_in">String</span>?</span>)</span> &#123;</span><br><span class="line">    <span class="comment">//这里可以打印观察一下新值和旧值</span></span><br><span class="line">    Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;loadImageUrl oldUrl-&gt;&quot;</span> + oldUrl + <span class="string">&quot; newUrl-&gt;&quot;</span> + newUrl)</span><br><span class="line">    <span class="keyword">if</span> (!newUrl.equals(oldUrl)) &#123;</span><br><span class="line">        Glide.with(view).load(newUrl).placeholder(R.drawable.ic_baseline_error_outline_24)</span><br><span class="line">            .into(view)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="对象转换"><a href="#对象转换" class="headerlink" title="对象转换"></a>对象转换</h5><p><strong>自动转换对象</strong></p>
+<p>当绑定表达式返回 <code>Object</code> 时，库会选择用于设置属性值的方法。<code>Object</code> 会转换为所选方法的参数类型。对于使用 <code>ObservableMap</code> 类存储数据的应用，这种行为非常便捷，如以下示例所示：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;TextView</span><br><span class="line">       android:text=<span class="string">&#x27;@&#123;userMap[&quot;lastName&quot;]&#125;&#x27;</span></span><br><span class="line">       android:layout_width=<span class="string">&quot;wrap_content&quot;</span></span><br><span class="line">       android:layout_height=<span class="string">&quot;wrap_content&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
+<p>表达式中的 <code>userMap</code> 对象会返回一个值，该值会自动转换为用于设置 <code>android:text</code> 特性值的 <code>setText(CharSequence)</code> 方法中的参数类型。如果参数类型不明确，则必须在表达式中强制转换返回类型。</p>
+<p><strong>自定义转换</strong><br>略…</p>
+<h2 id="双向数据绑定"><a href="#双向数据绑定" class="headerlink" title="双向数据绑定"></a>双向数据绑定</h2><p>双向数据绑定是指 <code>源数据</code> 和 `UI 之间是互相影响的。其一发生变化另一个也会跟着变化。要实现双向数据绑定需要满足如下条件：</p>
+<ul>
+<li>源数据可监听</li>
+<li>@={} 表示法</li>
+</ul>
+<p>Sample项目中，涉及到双向绑定的是TwoWayData、TwoWayFragment。TwoWayData就是一个可观察对象，TwoWayFragment的xml中主要实现了两个双向绑定的功能需求：<br>1.检测ToggleButton的点击状态，可以实现修改click值是UI点击状态发生改变，或者直接点击ToggleButton也会改变click的值<br>2.EditText显示时间戳并显示对应的时间格式，同时通过编辑修改时间后对应的时间戳的值也会发生变化</p>
+<p>下面一个个分析，先看一下我们的数据对象：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">class TwoWayData : BaseObservable() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> click: <span class="built_in">Boolean</span> = <span class="literal">false</span></span><br><span class="line">        @Bindable <span class="function"><span class="title">get</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> field</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="title">set</span>(<span class="params">value: <span class="built_in">Boolean</span></span>)</span> &#123;</span><br><span class="line">            field = value</span><br><span class="line">            notifyPropertyChanged(BR.click)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> currentTime: Long = System.currentTimeMillis()</span><br><span class="line">        @Bindable <span class="function"><span class="title">get</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> field</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="title">set</span>(<span class="params">value</span>)</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (field != value) &#123;</span><br><span class="line">                field = value</span><br><span class="line">                <span class="keyword">if</span> (value &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    notifyPropertyChanged(BR.currentTime)</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    fun <span class="function"><span class="title">onChecked</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        click = !click</span><br><span class="line">        notifyPropertyChanged(BR.click)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> &lt;ToggleButton</span><br><span class="line">            ...</span><br><span class="line">            android:checked=<span class="string">&quot;@=&#123;twoway.click&#125;&quot;</span></span><br><span class="line">         /&gt;</span><br></pre></td></tr></table></figure>
+<h5 id="使用自定义特性的双向数据绑定"><a href="#使用自定义特性的双向数据绑定" class="headerlink" title="使用自定义特性的双向数据绑定"></a>使用自定义特性的双向数据绑定</h5><p>你可以使用<a href="#tag3">常见的双向特性</a>的属性，如果您希望结合使用双向数据绑定和自定义特性，则需要使用 @InverseBindingAdapter 和 @InverseBindingMethod 注释。<br>结合Sameple中的代码：<br>1.使用 @BindingAdapter，对用来设置初始值并在值更改时进行更新的方法进行注释：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@BindingAdapter(<span class="string">&quot;textDate&quot;</span>)</span><br><span class="line"> @JvmStatic</span><br><span class="line"> fun <span class="function"><span class="title">setTextDate</span>(<span class="params">view: EditText, value: <span class="built_in">String</span></span>)</span> &#123;</span><br><span class="line">     Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;setTextDate&quot;</span>)</span><br><span class="line">     view.setText(value)</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>2.使用 @InverseBindingAdapter 对从视图中读取值的方法进行注释：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@InverseBindingAdapter(attribute = <span class="string">&quot;textDate&quot;</span>)</span><br><span class="line">    @JvmStatic</span><br><span class="line">    fun getTextDate(view: EditText): <span class="built_in">String</span> &#123;</span><br><span class="line">        Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;getTextDate&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> view.text.toString()</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>此时，数据绑定知道在数据发生更改时要执行的操作（调用使用 <code>@BindingAdapter</code> 注释的方法）以及当 <code>view</code> 视特性发生更改时要调用的内容（调用 <code>InverseBindingListener</code>）。但是，它不知道特性何时或如何更改。</p>
+<p>为此，您需要在视图上设置监听器。这可以是与您的自定义视图相关联的自定义监听器，也可以是通用事件，例如失去焦点或文本更改。将 <code>@BindingAdapter</code> 注释添加到设置监听器（用来监听属性更改）的方法中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">@BindingAdapter(<span class="string">&quot;textDateAttrChanged&quot;</span>)</span><br><span class="line">@JvmStatic</span><br><span class="line">fun <span class="function"><span class="title">setListener</span>(<span class="params">view: EditText, listener: InverseBindingListener?</span>)</span> &#123;</span><br><span class="line">    view.addTextChangedListener(object : TextWatcher &#123;</span><br><span class="line">        override fun <span class="function"><span class="title">beforeTextChanged</span>(<span class="params">s: CharSequence?, start: Int, count: Int, after: Int</span>)</span> &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        override fun <span class="function"><span class="title">onTextChanged</span>(<span class="params">s: CharSequence?, start: Int, before: Int, count: Int</span>)</span> &#123;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        override fun <span class="function"><span class="title">afterTextChanged</span>(<span class="params">s: Editable?</span>)</span> &#123;</span><br><span class="line">            Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;afterTextChanged...&quot;</span> + s.toString())</span><br><span class="line">            val regex =</span><br><span class="line">                <span class="string">&quot;[0-9]&#123;4&#125;-[0-9]&#123;2&#125;-[0-9]&#123;2&#125; [0-9]&#123;2&#125;:[0-9]&#123;2&#125;:[0-9]&#123;2&#125;&quot;</span> <span class="comment">////yyyy-MM-dd HH:mm:ss</span></span><br><span class="line">            val btmp = Pattern.compile(regex).matcher(s.toString()).matches()</span><br><span class="line">            <span class="keyword">if</span> (btmp) &#123;</span><br><span class="line">                listener?.onChange()<span class="comment">//通知特性已经发生更改</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该监听器包含一个 <code>InverseBindingListener</code> 参数。您可以使用 <code>InverseBindingListener</code> 告知数据绑定系统，特性已更改。然后，该系统可以开始调用使用 <code>@InverseBindingAdapter</code> 注释的方法</p>
+<p><strong>转换器</strong></p>
+<p>EditText显示时间格式，但是传入的twoway.currentTime是Long，所以需要将Long转化成yyyy-MM-dd HH:mm:ss格式的字符串，此过程是通过向其中一个转换器添加 <code>@InverseMethod</code> 注释并让此注释引用反向转换器来完成的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">&lt;EditText</span><br><span class="line">            android:id=<span class="string">&quot;@+id/et_date&quot;</span></span><br><span class="line">            textDate=<span class="string">&quot;@=&#123;MyTestConverters.longToString(context, twoway.currentTime)&#125;&quot;</span></span><br><span class="line">             /&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">object MyTestConverters &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//转换器：作用将Long转换成yyyy-MM-dd HH:mm:ss格式的字符串，设置到视图控件上</span></span><br><span class="line">    @InverseMethod(<span class="string">&quot;stringToLong&quot;</span>)</span><br><span class="line">    @JvmStatic</span><br><span class="line">    fun longToString(context: Context, <span class="attr">currentTime</span>: Long): <span class="built_in">String</span> &#123;</span><br><span class="line">        Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;longToString&quot;</span>)</span><br><span class="line">        <span class="keyword">return</span> TimeUitl.stampToTime(currentTime)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//反向转换器：作用将yyyy-MM-dd HH:mm:ss格式的字符串转换成Long，设置到数据源上</span></span><br><span class="line">    @JvmStatic</span><br><span class="line">    fun stringToLong(context: Context, <span class="attr">timers</span>: <span class="built_in">String</span>): Long &#123;</span><br><span class="line">        Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;stringToLong&quot;</span>)</span><br><span class="line">        val result: Long = TimeUitl.timeToStamp(timers)</span><br><span class="line">        val n: Int = <span class="number">0</span></span><br><span class="line">        <span class="keyword">if</span> (result == n.toLong()) &#123;</span><br><span class="line">            Toast.makeText(context, <span class="string">&quot;格式不正确&quot;</span>, Toast.LENGTH_SHORT).show()</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>使用双向数据绑定的无限循环</strong></p>
+<p>使用双向数据绑定时，请注意不要引入无限循环。当用户更改特性时，系统会调用使用 <code>@InverseBindingAdapter</code> 注释的方法，并且该值将分配给后备属性。继而调用使用 <code>@BindingAdapter</code> 注释的方法，从而触发对使用 <code>@InverseBindingAdapter</code> 注释的方法的另一个调用，依此类推。</p>
+<p>因此，通过比较使用 <code>@BindingAdapter</code> 注释的方法中的新值和旧值，可以打破可能出现的无限循环。</p>
+<h5 id="双向特性"><a href="#双向特性" class="headerlink" title="双向特性"></a>双向特性</h5><p><span id="tag3"></span><br>当您使用下表中的特性时，该平台提供对双向数据绑定的内置支持。<br><img src="img02.jpg" alt="java-javascript"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><code>DataBinding</code>的优缺点总结：</p>
+<p><strong>优点</strong></p>
+<ul>
+<li>不用再写 <code>findViewById</code>，提高性能</li>
+<li><code>DataBinding</code> 作为 <code>MVVM</code> 架构中重要的组成部分,起到分离视图层和数据层的作用</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li><code>bug</code>定位困难，出现问题基本只能看到 <code>DataBinding</code> 类无法生产</li>
+<li>代码补全效果不太好</li>
+<li>学习成本高</li>
+</ul>
+<!-- //修改数据源后，UI上会更新，底层是如何实现的？？ -->
+
+
+
+
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2021/05/13/学习Android-Jetpack-LiveData-ViewModel/" data-toggle="tooltip" data-placement="top" title="学习Android Jetpack:Lifecycle & LiveData & ViewModel">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2021/03/01/学习Android-JetPack-Navigation/" data-toggle="tooltip" data-placement="top" title="学习Android Jetpack: Navigation">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Android JetPack" title="Android JetPack">Android JetPack</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://j-a-g.github.io/2021/04/03/%E5%AD%A6%E4%B9%A0Android-Jetpack-Databinding/";
+    var disqus_url = "https://j-a-g.github.io/2021/04/03/%E5%AD%A6%E4%B9%A0Android-Jetpack-Databinding/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; JAG&#39;s Blog 2022 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="https://github.com/Kaijun/hexo-theme-huxblog">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="https://github.com/J-a-g/J-a-g.github.io">JAG</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=J-a-g&J-a-g.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://j-a-g.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

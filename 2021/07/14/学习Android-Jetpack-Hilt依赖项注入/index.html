@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          学习Android Jetpack:Hilt依赖项注入 - JAG的博客 | JAG&#39;s Blog
+        
+    </title>
+
+    <link rel="canonical" href="https://j-a-g.github.io/2021/07/14/学习Android-Jetpack-Hilt依赖项注入/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">JAG&#39;s Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#Android JetPack" title="Android JetPack">Android JetPack</a>
+                        
+                    </div>
+                    <h1>学习Android Jetpack:Hilt依赖项注入</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Chengjian Su on
+                        2021-07-14
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="依赖项注入"><a href="#依赖项注入" class="headerlink" title="依赖项注入"></a>依赖项注入</h2><p>依赖项注入 (DI) 是一种广泛用于编程的技术，非常适用于 Android 开发。遵循 DI 的原则可以为良好的应用架构奠定基础。</p>
+<p>实现依赖项注入可为您带来以下优势：</p>
+<ul>
+<li>重用代码</li>
+<li>易于重构</li>
+<li>易于测试</li>
+</ul>
+<h5 id="什么是依赖项注入？"><a href="#什么是依赖项注入？" class="headerlink" title="什么是依赖项注入？"></a>什么是依赖项注入？</h5><p>类通常需要引用其他类。例如，Car 类可能需要引用 Engine 类。这些必需类称为依赖项，在此示例中，Car 类依赖于拥有 Engine 类的一个实例才能运行。<br>类可通过以下三种方式获取所需的对象：<br>&emsp;&emsp;1.类构造其所需的依赖项。在以上示例中，Car 将创建并初始化自己的 Engine 实例。<br>&emsp;&emsp;2.从其他地方抓取。某些 Android API（如 Context getter 和 getSystemService()）的工作原理便是如此。<br>&emsp;&emsp;3.以参数形式提供。应用可以在构造类时提供这些依赖项，或者将这些依赖项传入需要各个依赖项的函数。在以上示例中，Car 构造函数将接收 Engine 作为参数。<br><strong>第三种方式就是依赖项注入！使用这种方法，您可以获取并提供类的依赖项，而不必让类实例自行获取。</strong></p>
+<p>看一下在不使用依赖项注入的情况下的代码示例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Car</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    private val engine = Engine()</span><br><span class="line"></span><br><span class="line">    fun <span class="function"><span class="title">start</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        engine.start()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fun <span class="function"><span class="title">main</span>(<span class="params">args: <span class="built_in">Array</span></span>)</span> &#123;</span><br><span class="line">    val car = Car()</span><br><span class="line">    car.start()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="a.jpg" alt="java-javascript"><br>再看一下使用依赖项注入的情况下的代码示例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class Car(private val engine: Engine) &#123;</span><br><span class="line">    fun <span class="function"><span class="title">start</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        engine.start()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">fun <span class="function"><span class="title">main</span>(<span class="params">args: <span class="built_in">Array</span></span>)</span> &#123;</span><br><span class="line">    val engine = Engine()</span><br><span class="line">    val car = Car(engine)</span><br><span class="line">    car.start()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="b.jpg" alt="java-javascript"></p>
+<p>第一段代码的问题：<br>&emsp;&emsp;1.Car 和 Engine 关联太密切<br>&emsp;&emsp;2.对 Engine 的强依赖使得测试更加困难</p>
+<p>Android 中有两种主要的依赖项注入方式：</p>
+<ul>
+<li><strong>构造函数注入。</strong>这就是上面描述的方式。您将某个类的依赖项传入其构造函数。</li>
+<li><strong>字段注入（或 setter 注入。</strong>某些 Android 框架类（如 Activity 和 Fragment）由系统实例化，因此无法进行构造函数注入。使用字段注入时，依赖项将在创建类后实例化。</li>
+</ul>
+<blockquote>
+<p><code>Hilt</code> 是推荐用于在 Android 中实现依赖项注入的 Jetpack 库。<code>Hilt</code> 通过为项目中的每个 Android 类提供容器并自动为您管理其生命周期，定义了一种在应用中执行 DI 的标准方法。<br>&emsp;<br><code>Hilt</code> 在热门 DI 库 Dagger 的基础上构建而成，因而能够受益于 Dagger 提供的编译时正确性、运行时性能、可伸缩性和 Android Studio 支持。</p>
+</blockquote>
+<h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/googlecodelabs/android-hilt">https://github.com/googlecodelabs/android-hilt</a><br>文档地址：<a target="_blank" rel="noopener" href="https://developer.android.com/codelabs/android-hilt#0">https://developer.android.com/codelabs/android-hilt#0</a></p>
+<p>下面文章将直接使用官方项目的代码进行解释说明，项目中有两个分支 <code>master</code> 和 <code>solution</code>，<code>master</code>是没有使用Hilt进行依赖项注入的代码，<code>solution</code>则是使用Hilt对原有代码进行重构后的代码，功能两者基本保持不变，为了讲解Hilt的一些功能，<code>solution</code>中的功能稍微多一点基本相同。</p>
+<p>项目需求：用户通过 button 与软件进行交互，并将交互记录到<a href="/2021/06/16/%E5%AD%A6%E4%B9%A0Android-Jetpack-Room/" title="Room数据库">Room数据库</a>,可以查看和删除记录。效果如下：<br><img src="ezgif.com-gif-maker.gif" alt="java-javascript"></p>
+<h2 id="添加依赖项"><a href="#添加依赖项" class="headerlink" title="添加依赖项"></a>添加依赖项</h2><p>打开根 build.gradle 文件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    ...</span><br><span class="line">    ext.hilt_version = <span class="string">&#x27;2.28-alpha&#x27;</span></span><br><span class="line">    dependencies &#123;</span><br><span class="line">        ...</span><br><span class="line">        classpath <span class="string">&quot;com.google.dagger:hilt-android-gradle-plugin:$hilt_version&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，为在 app 模块中使用 gradle 插件，我们应在 app/build.gradle 文件中指定它，具体方法为：将 gradle 插件添加到此文件的顶部、kotlin-kapt 插件之下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">apply plugin: <span class="string">&#x27;kotlin-kapt&#x27;</span></span><br><span class="line">apply plugin: <span class="string">&#x27;dagger.hilt.android.plugin&#x27;</span></span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后，Hilt 依赖项会包含在项目的同一个 app/build.gradle 文件中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">dependencies &#123;</span><br><span class="line">    ...</span><br><span class="line">    implementation <span class="string">&quot;com.google.dagger:hilt-android:$hilt_version&quot;</span></span><br><span class="line">    kapt <span class="string">&quot;com.google.dagger:hilt-android-compiler:$hilt_version&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Hilt使用"><a href="#Hilt使用" class="headerlink" title="Hilt使用"></a>Hilt使用</h2><h5 id="Hilt应用类"><a href="#Hilt应用类" class="headerlink" title="Hilt应用类"></a>Hilt应用类</h5><p>所有使用 Hilt 的应用都必须包含一个带有 <code>@HiltAndroidApp</code> 注释的 Application 类。<code>@HiltAndroidApp</code> 会触发 Hilt 的代码生成操作，生成的代码包括应用的一个基类，该基类充当应用级依赖项容器。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@HiltAndroidApp</span><br><span class="line">class LogApplication : Application()</span><br></pre></td></tr></table></figure>
+<p>生成的这一 Hilt 组件会附加到 Application 对象的生命周期，并为其提供依赖项。此外，它也是应用的父组件，这意味着，其他组件可以访问它提供的依赖项。</p>
+<h5 id="使用-Hilt-实现字段注入"><a href="#使用-Hilt-实现字段注入" class="headerlink" title="使用 Hilt 实现字段注入"></a>使用 Hilt 实现字段注入</h5><p><code>LogsFragment</code> 会在 <code>onAttach</code> 中填充其字段。我们可以使用 <code>Hilt</code> 来创建和管理 <code>LoggerLocalDataSource</code> 和 <code>DateFormatter</code> 的实例，而不是使用 <code>ServiceLocator</code> 手动填充这些类型的实例。<br>如要让 <code>LogsFragment</code> 使用 <code>Hilt</code>，我们需要为其添加 <code>@AndroidEntryPoint</code> 注解。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@AndroidEntryPoint</span></span><br><span class="line">class LogsFragment : Fragment() &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为 Android 类添加 <code>@AndroidEntryPoint</code> 注解会创建一个沿袭 Android 类生命周期的依赖项容器。</p>
+<blockquote>
+<p><code>Hilt</code> 目前支持以下 Android 类型：<code>Application</code>（通过使用 <code>@HiltAndroidApp</code>）、<code>Activity</code>、<code>Fragment</code>、<code>View</code>、<code>Service</code> 和 <code>BroadcastReceiver</code>。<br>&emsp;<br><code>Hilt</code> 仅支持扩展 <code>FragmentActivity</code>（例如 <code>AppCompatActivity</code>）的 activity 和扩展 Jetpack 库 <code>Fragment</code> 的 fragment，不支持 Android 平台中的 <code>Fragment</code>（现已弃用）。</p>
+</blockquote>
+<p>如果您使用 <code>@AndroidEntryPoint</code> 为某个 Android 类添加注释，则还必须为依赖于该类的 Android 类添加注释。例如，如果您为某个 <code>Fragment</code> 添加注释，则还必须为使用该 <code>Fragment</code> 的所有 <code>Activit</code> 添加注释。</p>
+<p>利用 <code>@AndroidEntryPoint</code>，<code>Hilt</code> 可创建附着于 <code>LogsFragment</code> 生命周期的依赖项容器，并能够将实例注入 <code>LogsFragment</code>。如何让 <code>Hilt</code> 进行字段注入？<br>对于要进行注入的字段（例如 <code>logger</code> 和 <code>dateFormatter</code>），我们可以利用 <code>@Inject</code> <strong>注解让 Hilt 注入不同类型的实例：</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@AndroidEntryPoint</span><br><span class="line">class LogsFragment : Fragment() &#123;</span><br><span class="line"></span><br><span class="line">    @Inject lateinit <span class="keyword">var</span> logger: LoggerLocalDataSource</span><br><span class="line">    @Inject lateinit <span class="keyword">var</span> dateFormatter: DateFormatter</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这就是所谓的<strong>字段注入。</strong></p>
+<p>由于 <code>Hilt</code> 将负责赋值这些字段，因此我们不再需要 populateFields 方法。让我们从类中移除该方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@AndroidEntryPoint</span><br><span class="line">class LogsFragment : Fragment() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Remove following code from LogsFragment</span></span><br><span class="line"></span><br><span class="line">    override fun <span class="function"><span class="title">onAttach</span>(<span class="params">context: Context</span>)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onAttach(context)</span><br><span class="line"></span><br><span class="line">        populateFields(context)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private fun <span class="function"><span class="title">populateFields</span>(<span class="params">context: Context</span>)</span> &#123;</span><br><span class="line">    	<span class="comment">//主要是对logger、dateFormatter进行赋值</span></span><br><span class="line">        logger = (context.applicationContext <span class="keyword">as</span> LogApplication).serviceLocator.loggerLocalDataSource</span><br><span class="line">        dateFormatter =</span><br><span class="line">            (context.applicationContext <span class="keyword">as</span> LogApplication).serviceLocator.provideDateFormatter()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在后台，<code>Hilt</code> 将使用自动生成的 <code>LogsFragment</code> 依赖项容器中内置的实例在 <code>onAttach()</code> 生命周期方法中填充这些字段。</p>
+<h5 id="组件生命周期"><a href="#组件生命周期" class="headerlink" title="组件生命周期"></a>组件生命周期</h5><p>Hilt 会按照相应 Android 类的生命周期自动创建和销毁生成的组件类的实例。<br><img src="c.jpg" alt="java-javascript"></p>
+<h5 id="告知-Hilt-如何通过-Inject-提供依赖项"><a href="#告知-Hilt-如何通过-Inject-提供依赖项" class="headerlink" title="告知 Hilt 如何通过 @Inject 提供依赖项"></a>告知 Hilt 如何通过 @Inject 提供依赖项</h5><p>要执行字段注入，<code>Hilt</code> 需要知道如何提供这些依赖项的实例！在本例中，<code>Hilt</code> 需要知道如何提供 <code>LoggerLocalDataSource</code> 和 <code>DateFormatter</code> 的实例。但是，<code>Hilt</code> 还不知道如何提供这些实例。</p>
+<p><strong>如要告知 Hilt 如何提供类型的实例，请向要注入的类的构造函数添加 @Inject 注解。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DateFormatter</span> @<span class="title">Inject</span> <span class="title">constructor</span>() </span>&#123; ... &#125;</span><br><span class="line"></span><br><span class="line">class LoggerLocalDataSource @Inject constructor(private val logDao: LogDao) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="将实例的作用域限定为容器"><a href="#将实例的作用域限定为容器" class="headerlink" title="将实例的作用域限定为容器"></a>将实例的作用域限定为容器</h5><p>默认情况下，<code>Hilt</code> 中的所有绑定都未限定作用域。这意味着，每当应用请求绑定时，<code>Hilt</code> 都会创建所需类型的一个新实例。<br>不过，Hilt 也允许将绑定的作用域限定为特定组件。Hilt 只为绑定作用域限定到的组件的每个实例创建一次限定作用域的绑定，对该绑定的所有请求共享同一实例，<strong>即在限定作用域的实例是同一个实例。</strong></p>
+<p>下表列出了生成的每个组件的作用域注释：<br><img src="d.jpg" alt="java-javascript"></p>
+<p>在原项目中无论何时调用 <code>ServiceLocator</code>，它始终返回 <code>LoggerLocalDataSource</code> 的相同实例,所以我们希望 <code>application</code> 容器始终提供 <code>LoggerLocalDataSource</code> 的相同实例,因此为其类添加 <code>@Singleton</code> 注解：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@Singleton</span><br><span class="line">class LoggerLocalDataSource @Inject constructor(private val logDao: LogDao) &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>如果绑定在层次结构的较高层级中可用，那么在较低层级的容器中也可用。</strong>因此，如果 <code>LoggerLocalDataSource</code> 的某个实例在 <code>application</code> 容器中可用，那么它在 activity 和 fragment 容器中也可用。</p>
+</blockquote>
+<p>现在，<code>Hilt</code> 知道如何提供 <code>LoggerLocalDataSource</code> 实例了。但是，这一次，该类型具有传递依赖项！如要提供 <code>LoggerLocalDataSource</code> 实例，<code>Hilt</code> 还需要知道如何提供 <code>LogDao</code> 实例。<br>不过，由于 <code>LogDao</code> 是一个接口，而接口没有构造函数，因此我们无法为其构造函数添加 <code>@Inject</code> 注解。该怎么告知 <code>Hilt</code> 如何提供该类型的实例？</p>
+<h5 id="Hilt-模块"><a href="#Hilt-模块" class="headerlink" title="Hilt 模块"></a>Hilt 模块</h5><p><strong>模块用于向 <code>Hilt</code> 添加绑定</strong>，换句话说，用于告知 <code>Hilt</code> 如何提供不同类型的实例。在 <code>Hilt</code> 模块中，您可以为<strong>无法通过构造函数注入的类型</strong>（例如接口或未包含在您项目中的类）添加绑定。</p>
+<p><strong>Hilt 模块是带有<code>@Module</code> 和 <code>@InstallIn</code> 注解的类</strong>。<code>@Module</code> 会告知 Hilt 这是一个模块，而 <code>@InstallIn</code> 会通过指定 Hilt 组件告知 Hilt 绑定在哪些容器中可用</p>
+<p>Hilt 提供了以下组件：<br><img src="e.jpg" alt="java-javascript"></p>
+<p><strong>对于每个可被 Hilt 注入的 Android 类，都有一个关联的 Hilt 组件。</strong>例如，<code>Application</code> 容器与 <code>SingletonComponent</code> 相关联，而 <code>Fragment</code> 容器与 <code>FragmentComponent</code> 相关联。</p>
+<p><strong>创建模块</strong><br>创建一个可添加绑定的 Hilt 模块。创建一个名为 DatabaseModule.kt 的新文件，由于 <code>LoggerLocalDataSource</code> 的作用域限定为 <code>application</code> 容器，因此 <code>LogDao</code> 绑定需要在 <code>application</code> 容器中可用。我们通过传递与其相关联的 <code>Hilt</code> 组件的类（即 <code>SingletonComponent:class</code>），使用 <code>@InstallIn</code> 注解指定该要求：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@InstallIn(SingletonComponent::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">Module</span></span></span><br><span class="line"><span class="class"><span class="title">object</span> <span class="title">DatabaseModule</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>LogDao</code> 的实例通过调用 <code>logsDatabase.logDao()</code> 来获取。因此，为了提供 <code>LogDao</code> 的实例，我们在 <code>AppDatabase</code> 类上创建了一个传递依赖项。</p>
+<p><strong>使用 @Provides 提供实例</strong></p>
+<p>我们可以在 Hilt 模块中为函数添加 <code>@Provides</code> 注解，告知 Hilt 如何提供无法通过构造函数注入的类型。</p>
+<p>每当 Hilt 需要提供相应类型的实例时，都会执行带有 <code>@Provides</code> 注解的函数的函数主体。带有 <code>@Provides</code> 注解的函数的返回值类型会告知 Hilt 绑定的类型，即如何提供该类型的实例。函数参数是该类型的依赖项。</p>
+<p>在本例中，我们将此函数包含在 DatabaseModule 类中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@InstallIn(SingletonComponent::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">Module</span></span></span><br><span class="line"><span class="class"><span class="title">object</span> <span class="title">DatabaseModule</span> </span>&#123;</span><br><span class="line">    @Provides</span><br><span class="line">    fun provideLogDao(database: AppDatabase): LogDao &#123;</span><br><span class="line">        <span class="keyword">return</span> database.logDao()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码告知 Hilt 当提供 <code>LogDao</code> 的实例时需要执行 <code>database.logDao()</code>。由于我们将 <code>AppDatabase</code> 作为传递依赖项，因此还需要告知 Hilt 如何提供该类型的实例。</p>
+<p><code>AppDatabase</code> 类由 <code>Room</code> 生成，我们的项目也不拥有该类，因此我们也能够以类似于在 ServiceLocator 类中构建数据库实例的方式，使用 <code>@Provides</code> 函数提供它。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">@InstallIn(SingletonComponent::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">Module</span></span></span><br><span class="line"><span class="class"><span class="title">object</span> <span class="title">DatabaseModule</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    @Provides</span><br><span class="line">    @Singleton</span><br><span class="line">    fun provideDatabase(@ApplicationContext appContext: Context): AppDatabase &#123;</span><br><span class="line">        <span class="keyword">return</span> Room.databaseBuilder(</span><br><span class="line">            appContext,</span><br><span class="line">            AppDatabase::<span class="keyword">class</span>.java,</span><br><span class="line">            <span class="string">&quot;logging.db&quot;</span></span><br><span class="line">        ).build()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Provides</span><br><span class="line">    fun provideLogDao(database: AppDatabase): LogDao &#123;</span><br><span class="line">        <span class="keyword">return</span> database.logDao()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于我们希望 Hilt 始终提供相同的数据库实例，因此为 <code>@Provides provideDatabase</code> 方法添加了 <code>@Singleton</code> 注解。</p>
+<p>每个 Hilt 容器都随附一组默认绑定，可作为依赖项注入到您的自定义绑定。<code>applicationContext</code> 便是这样：要访问它，您需要为字段添加 <code>@ApplicationContext</code> 注解。</p>
+<p>现在，Hilt 具有在 <code>LogsFragment</code> 中注入实例所需的全部信息。但是，在运行应用之前，Hilt 需要了解托管 <code>Fragment</code> 的 <code>Activity</code> 才能正常运作。我们需要为<code> MainActivity</code> 添加 <code>@AndroidEntryPoint</code> 注解。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@AndroidEntryPoint</span><br><span class="line">class MainActivity : AppCompatActivity() &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<p>现在，您可以运行应用并检查一切是否可以像以前一样正常工作。</p>
+<h5 id="使用-Binds-提供接口"><a href="#使用-Binds-提供接口" class="headerlink" title="使用 @Binds 提供接口"></a>使用 @Binds 提供接口</h5><p><code>MainActivity</code> 从调用 <code>provideNavigator(activity: FragmentActivity)</code> 函数的 <code>ServiceLocator</code> 中获取 <code>AppNavigator</code> 的实例。</p>
+<p>由于 <code>AppNavigator</code> 是一个接口，因此我们无法使用构造函数注入。<strong>要告知 Hilt 为接口使用哪种实现，您可以对 Hilt 模块内的函数使用 <code>@Binds</code> 注解。</strong></p>
+<p>必须为<strong>抽象函数</strong>添加 <code>@Binds</code> 注解（它是抽象的，因此不包含任何代码，且该类也需要是抽象的）。抽象函数的返回值类型是我们要提供实现的接口（即 AppNavigator）。<strong>实现通过添加具有接口实现类型（即 AppNavigatorImpl）的唯一参数指定。</strong>  </p>
+<blockquote>
+<p><strong>Hilt 模块不能同时包含非静态和抽象绑定方法，因此您不能将 @Binds 和 @Provides 注解放在同一个类中。</strong></p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@InstallIn(ActivityComponent::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">Module</span></span></span><br><span class="line"><span class="class"><span class="title">abstract</span> <span class="title">class</span> <span class="title">NavigationModule</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    @Binds</span><br><span class="line">    abstract fun bindNavigator(impl: AppNavigatorImpl): AppNavigator</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在该模块内，我们可以为 <code>AppNavigator</code> 添加绑定。一个抽象函数会返回我们告知 Hilt 的接口（即 <code>AppNavigator</code>），<strong>而函数参数是该接口的实现（即 <code>AppNavigatorImpl</code>）</strong>。</p>
+<p>现在，我们必须告知 Hilt 如何提供 <code>AppNavigatorImpl</code> 的实例。由于该类可以进行构造函数注入，因此我们只需为其构造函数添加 <code>@Inject</code> 注解。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AppNavigatorImpl</span> @<span class="title">Inject</span> <span class="title">constructor</span>(</span></span><br><span class="line">    private val activity: FragmentActivity</span><br><span class="line">) : AppNavigator &#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在，Hilt 具有注入 <code>AppNavigator</code> 实例所需的全部信息。打开 <code>MainActivity.kt</code> 文件并执行以下操作：<br>&emsp;&emsp;1.为 navigator 字段添加 <code>@Inject</code> 注解，以供 Hilt 获取；<br>&emsp;&emsp;2.移除 private 可见性修饰符；<br>&emsp;&emsp;3.移除 onCreate 函数中的 navigator 初始化代码。</p>
+<p>同理通过Hilt修改ButtonsFragment中的代码，完成重构。此时已经完成了Hilt依赖项注入的代码重构，接下来将向应用添加一些新功能，以便您了解如何在不同情形中使用更高级的 Hilt 功能。</p>
+<h5 id="限定符"><a href="#限定符" class="headerlink" title="限定符"></a>限定符</h5><p>我们已从项目中移除 <code>ServiceLocator</code> 类，并且您学习了 Hilt 的基础知识，下面我们来向应用中添加新功能，以探索其他 Hilt 功能。</p>
+<p>在本部分中，您将学习以下内容：</p>
+<ul>
+<li>如何将作用域限定为 Activity 容器。</li>
+<li>什么是<strong>限定符</strong>、限定符解决什么问题以及如何使用。<br>为展示这一部分内容，我们需要应用有不同的行为。我们会将日志存储位置从数据库切换为内存中列表，以仅记录应用会话期间的日志。</li>
+</ul>
+<p><strong>LoggerDataSource 接口</strong><br>让我们开始将数据源抽象化到一个接口中。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">interface LoggerDataSource &#123;</span><br><span class="line">    fun addLog(msg: <span class="built_in">String</span>)</span><br><span class="line">    fun getAllLogs(callback: (List&lt;Log&gt;) -&gt; Unit)</span><br><span class="line">    fun removeLogs()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>ButtonsFragment</code> 和 <code>LogsFragment</code> 这两个 Fragment 都使用 <code>LoggerLocalDataSource</code>。我们需要重构它们，使其改为使用 <code>LoggerDataSource</code> 的实例。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@AndroidEntryPoint</span><br><span class="line">class LogsFragment : Fragment() &#123;</span><br><span class="line"></span><br><span class="line">    @Inject lateinit <span class="keyword">var</span> logger: LoggerDataSource</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@AndroidEntryPoint</span><br><span class="line">class ButtonsFragment : Fragment() &#123;</span><br><span class="line"></span><br><span class="line">    @Inject lateinit <span class="keyword">var</span> logger: LoggerDataSource</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来使用两个类去实现 <code>LoggerDataSource</code>,这两个类分别是 <code>LoggerLocalDataSource</code> 和 <code>LoggerInMemoryDataSource</code>,他们分别是将日志记录到数据库和内存中的实现</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@Singleton</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LoggerLocalDataSource</span> @<span class="title">Inject</span> <span class="title">constructor</span>(</span></span><br><span class="line">    private val logDao: LogDao</span><br><span class="line">) : LoggerDataSource &#123;</span><br><span class="line">    ...</span><br><span class="line">    override fun <span class="function"><span class="title">addLog</span>(<span class="params">msg: <span class="built_in">String</span></span>)</span> &#123; ... &#125;</span><br><span class="line">    override fun <span class="function"><span class="title">getAllLogs</span>(<span class="params">callback: (List&lt;Log&gt;) -&gt; Unit</span>)</span> &#123; ... &#125;</span><br><span class="line">    override fun <span class="function"><span class="title">removeLogs</span>(<span class="params"></span>)</span> &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LoggerInMemoryDataSource</span> @<span class="title">Inject</span> <span class="title">constructor</span>(</span></span><br><span class="line">) : LoggerDataSource &#123;</span><br><span class="line"></span><br><span class="line">    private val logs = LinkedList&lt;Log&gt;()</span><br><span class="line"></span><br><span class="line">    override fun <span class="function"><span class="title">addLog</span>(<span class="params">msg: <span class="built_in">String</span></span>)</span> &#123;</span><br><span class="line">        logs.addFirst(Log(msg, System.currentTimeMillis()))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun <span class="function"><span class="title">getAllLogs</span>(<span class="params">callback: (List&lt;Log&gt;) -&gt; Unit</span>)</span> &#123;</span><br><span class="line">        callback(logs)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    override fun <span class="function"><span class="title">removeLogs</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">        logs.clear()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于我们的应用仅包含一个 Activity（也称为“单 Activity”应用），因此我们应该在 <code>Activity</code> 容器中有一个 <code>LoggerInMemoryDataSource</code> 的实例，并在 <code>Fragment</code> 中重复使用该实例。</p>
+<p>我们可以通过将 <code>LoggerInMemoryDataSource</code> 的作用域限定为 <code>Activity</code> 容器来实现内存中记录行为：创建的每个 <code>Activity</code> 都有自己的容器及不同的实例。在每个容器中，当 <code>logger</code> 需要作为依赖项或用于字段注入时，系统将提供 <code>LoggerInMemoryDataSource</code> 的相同实例。此外，在<a target="_blank" rel="noopener" href="https://developer.android.com/training/dependency-injection/hilt-android#component-hierarchy">组件层次结构</a>下的容器中，也将提供相同的实例</p>
+<p>根据<a target="_blank" rel="noopener" href="https://developer.android.com/training/dependency-injection/hilt-android#component-hierarchy">“将作用域限定为组件”</a>文档，要将某个类型的作用域限定为 Activity 容器，我们需要为该类型添加 <code>@ActivityScoped</code> 注解：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@ActivityScoped</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LoggerInMemoryDataSource</span> @<span class="title">Inject</span> <span class="title">constructor</span>(</span></span><br><span class="line">) : LoggerDataSource &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+<p>目前，Hilt 知道如何提供 <code>LoggerInMemoryDataSource</code> 和 <code>LoggerLocalDataSource</code> 的实例，但 <code>LoggerDataSource</code> 呢？Hilt 不知道请求 <code>LoggerDataSource</code> 时应使用哪种实现。<strong>如果我们需要在同一项目中提供两种实现，该怎么办？</strong>如我们在其他界面或服务同时要使用 <code>LoggerLocalDataSource</code> </p>
+<p><strong>同一接口的两种实现</strong></p>
+<p>由于 <code>LoggerDataSource</code> 的不同实现的作用域限定为不同的容器，因此我们不能使用同一个模块：<code>LoggerInMemoryDataSource</code> 的作用域限定为 <code>Activity</code> 容器，而 <code>LoggerLocalDataSource</code> 的作用域限定为 <code>Application</code> 容器。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@InstallIn(SingletonComponent::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">Module</span></span></span><br><span class="line"><span class="class"><span class="title">abstract</span> <span class="title">class</span> <span class="title">LoggingDatabaseModule</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    @Singleton</span><br><span class="line">    @Binds</span><br><span class="line">    abstract fun bindDatabaseLogger(impl: LoggerLocalDataSource): LoggerDataSource</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@InstallIn(ActivityComponent::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">Module</span></span></span><br><span class="line"><span class="class"><span class="title">abstract</span> <span class="title">class</span> <span class="title">LoggingInMemoryModule</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    @ActivityScoped</span><br><span class="line">    @Binds</span><br><span class="line">    abstract fun bindInMemoryLogger(impl: LoggerInMemoryDataSource): LoggerDataSource</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>如果类型限定了作用域，<code>@Binds</code> 方法必须具有限定作用域的注解</strong>，因此，上面的函数带有 <code>@Singleton</code> 和 <code>@ActivityScoped</code> 注解。如果 <code>@Binds</code> 或 <code>@Provides</code> 用作某个类型的绑定，则该类型中限定作用域的注解将不会再使用，因此您可以开始将其从其他实现类中移除。</p>
+<p>若此时构建项目会出现报错，因为 <code>LoggerDataSource</code> 类型注入到了 Fragment 中，但<strong>同一类型有两个绑定，Hilt 不知道应使用哪种实现！</strong>如何告知 Hilt 应使用哪种实现呢？</p>
+<p><strong>使用限定符</strong><br><strong><code>如要告知 Hilt 如何提供同一类型的不同实现（多个绑定），您可以使用限定符。</code></strong></p>
+<blockquote>
+<p>限定符是用于标识绑定的注解。</p>
+</blockquote>
+<p><strong>由于每个限定符将用于标识一个绑定</strong>，我们需要为每种实现定义一个限定符。在 Android 类中注入该类型或将该类型作为其他类的依赖项时，需要使用限定符注解以避免歧义。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@Qualifier</span><br><span class="line">annotation <span class="class"><span class="keyword">class</span> <span class="title">InMemoryLogger</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">@<span class="title">Qualifier</span></span></span><br><span class="line"><span class="class"><span class="title">annotation</span> <span class="title">class</span> <span class="title">DatabaseLogger</span></span></span><br></pre></td></tr></table></figure>
+<p>现在，我们必须使用限定符为提供每种实现的 <code>@Binds</code>（或 <code>@Provides</code>，如果我们需要它）函数添加注解。请查看完整的代码，并注意 <code>@Binds</code> 方法中使用的限定符：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">@Qualifier</span><br><span class="line">annotation <span class="class"><span class="keyword">class</span> <span class="title">InMemoryLogger</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">@<span class="title">Qualifier</span></span></span><br><span class="line"><span class="class"><span class="title">annotation</span> <span class="title">class</span> <span class="title">DatabaseLogger</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line">@InstallIn(SingletonComponent::class)</span><br><span class="line">@Module</span><br><span class="line">abstract <span class="class"><span class="keyword">class</span> <span class="title">LoggingDatabaseModule</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    @DatabaseLogger</span><br><span class="line">    @Singleton</span><br><span class="line">    @Binds</span><br><span class="line">    abstract fun bindDatabaseLogger(impl: LoggerLocalDataSource): LoggerDataSource</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@InstallIn(ActivityComponent::<span class="class"><span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">Module</span></span></span><br><span class="line"><span class="class"><span class="title">abstract</span> <span class="title">class</span> <span class="title">LoggingInMemoryModule</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    @InMemoryLogger</span><br><span class="line">    @ActivityScoped</span><br><span class="line">    @Binds</span><br><span class="line">    abstract fun bindInMemoryLogger(impl: LoggerInMemoryDataSource): LoggerDataSource</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此外，在注入时，必须将这些限定符用于要注入的实现。在本例中，我们将在 Fragment 中使用 <code>LoggerInMemoryDataSource</code> 实现。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@AndroidEntryPoint</span><br><span class="line">class LogsFragment : Fragment() &#123;</span><br><span class="line"></span><br><span class="line">    @InMemoryLogger</span><br><span class="line">    @Inject lateinit <span class="keyword">var</span> logger: LoggerDataSource</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果您希望更改要使用的数据库实现，只需为注入的字段添加 <code>@DatabaseLogger</code> 而不是 <code>@InMemoryLogger</code> 注解。<br>修改后的效果：<br><img src="f.gif" alt="java-javascript"></p>
+<h5 id="EntryPoint-注释"><a href="#EntryPoint-注释" class="headerlink" title="@EntryPoint 注释"></a><a target="_blank" rel="noopener" href="https://developer.android.com/codelabs/android-hilt#10">@EntryPoint 注释</a></h5><p>略</p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2021/08/28/Android-卡顿监控实现/" data-toggle="tooltip" data-placement="top" title="Android 卡顿监控实现">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2021/06/16/学习Android-Jetpack-Room/" data-toggle="tooltip" data-placement="top" title="学习Android Jetpack:Room">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Android JetPack" title="Android JetPack">Android JetPack</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://j-a-g.github.io/2021/07/14/%E5%AD%A6%E4%B9%A0Android-Jetpack-Hilt%E4%BE%9D%E8%B5%96%E9%A1%B9%E6%B3%A8%E5%85%A5/";
+    var disqus_url = "https://j-a-g.github.io/2021/07/14/%E5%AD%A6%E4%B9%A0Android-Jetpack-Hilt%E4%BE%9D%E8%B5%96%E9%A1%B9%E6%B3%A8%E5%85%A5/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; JAG&#39;s Blog 2022 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="https://github.com/Kaijun/hexo-theme-huxblog">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="https://github.com/J-a-g/J-a-g.github.io">JAG</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=J-a-g&J-a-g.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://j-a-g.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

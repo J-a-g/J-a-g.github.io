@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          Fragment懒加载 - JAG的博客 | JAG&#39;s Blog
+        
+    </title>
+
+    <link rel="canonical" href="https://j-a-g.github.io/2020/05/01/Fragment懒加载/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">JAG&#39;s Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#Java" title="Java">Java</a>
+                        
+                          <a class="tag" href="/tags/#Android" title="Android">Android</a>
+                        
+                    </div>
+                    <h1>Fragment懒加载</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Chengjian Su on
+                        2020-05-01
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="懒加载"><a href="#懒加载" class="headerlink" title="懒加载"></a>懒加载</h2><p>懒加载即在页面第一次可见时再进行数据请求以及加载的操作，如果不进行懒加载会导致多个fragment页面的生命周期被调用，每个页面都进行网络请求这样会产生很多无用的请求，因为实际显示的只是用户看到的那个页面，其他页面没有必要在这个时候去加载数据。</p>
+<p><strong>懒加载两个使用场景</strong><br>场景一：使用FragmentManager实现底部导航栏页面切换<br>场景二：使用ViewPager实现标签栏页面切换</p>
+<h2 id="使用FragmentManager实现底部导航栏页面切换"><a href="#使用FragmentManager实现底部导航栏页面切换" class="headerlink" title="使用FragmentManager实现底部导航栏页面切换"></a>使用FragmentManager实现底部导航栏页面切换</h2><p><strong>1.通过使用add()+hide()+show()方法来实现Fragment切换</strong>，实现代码如下并打印生命周期日志:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">FragmentManager fragmentManager = getSupportFragmentManager();</span><br><span class="line">        FragmentTransaction ft = fragmentManager.beginTransaction();</span><br><span class="line"><span class="comment">//        ft.addToBackStack(null);</span></span><br><span class="line">        fragments[<span class="number">0</span>] = <span class="keyword">new</span> FirstFragment();</span><br><span class="line">        ft.add(R.id.nav_host_fragment, fragments[<span class="number">0</span>]);</span><br><span class="line">        ft.commitAllowingStateLoss();</span><br><span class="line"></span><br><span class="line">        navView.setOnNavigationItemSelectedListener(<span class="keyword">new</span> BottomNavigationView.OnNavigationItemSelectedListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public boolean <span class="function"><span class="title">onNavigationItemSelected</span>(<span class="params">@NonNull MenuItem menuItem</span>)</span> &#123;</span><br><span class="line">                <span class="keyword">switch</span> (menuItem.getItemId()) &#123;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_user:</span><br><span class="line">                        switchContent(getCurrentFragment(), fragments[<span class="number">0</span>]);</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_room:</span><br><span class="line">                        <span class="keyword">if</span> (fragments[<span class="number">1</span>] == <span class="literal">null</span>) &#123;</span><br><span class="line">                            fragments[<span class="number">1</span>] = <span class="keyword">new</span> SecondFragment();</span><br><span class="line">                            addContent(getCurrentFragment(), fragments[<span class="number">1</span>]);</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            switchContent(getCurrentFragment(), fragments[<span class="number">1</span>]);</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_setting:</span><br><span class="line">                        <span class="keyword">if</span> (fragments[<span class="number">2</span>] == <span class="literal">null</span>) &#123;</span><br><span class="line">                            fragments[<span class="number">2</span>] = <span class="keyword">new</span> ThirdFragment();</span><br><span class="line">                            addContent(getCurrentFragment(), fragments[<span class="number">2</span>]);</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            switchContent(getCurrentFragment(), fragments[<span class="number">2</span>]);</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public <span class="keyword">void</span> <span class="function"><span class="title">switchContent</span>(<span class="params">Fragment <span class="keyword">from</span>, Fragment to</span>)</span> &#123;</span><br><span class="line">        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();</span><br><span class="line">        transaction.hide(<span class="keyword">from</span>).show(to).commitAllowingStateLoss();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public <span class="keyword">void</span> <span class="function"><span class="title">addContent</span>(<span class="params">Fragment <span class="keyword">from</span>, Fragment to</span>)</span> &#123;</span><br><span class="line">        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();</span><br><span class="line">        transaction.hide(<span class="keyword">from</span>).add(R.id.nav_host_fragment, to).commitAllowingStateLoss();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>默认先打开Fragment_01,并依次切换Fragment_01-&gt;Fragment_02-&gt;Fragment_03-&gt;Fragment_01，最后关闭Activity</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">打开默认第一个界面</span><br><span class="line">Fragment_01 onAttach</span><br><span class="line">Fragment_01 onCreate</span><br><span class="line">Fragment_01 onCreateView</span><br><span class="line">Fragment_01 onStart</span><br><span class="line">Fragment_01 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_02界面</span><br><span class="line">Fragment_02 onAttach</span><br><span class="line">Fragment_02 onCreate</span><br><span class="line">Fragment_02 onCreateView</span><br><span class="line">Fragment_02 onStart</span><br><span class="line">Fragment_02 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_03界面</span><br><span class="line">Fragment_03 onAttach</span><br><span class="line">Fragment_03 onCreate</span><br><span class="line">Fragment_03 onCreateView</span><br><span class="line">Fragment_03 onStart</span><br><span class="line">Fragment_03 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_01界面</span><br><span class="line">...</span><br><span class="line">没有触发生命周期</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">关闭Activity</span><br><span class="line">Fragment_01 onPause</span><br><span class="line">Fragment_02 onPause</span><br><span class="line">Fragment_03 onPause</span><br><span class="line">Fragment_01 onStop</span><br><span class="line">Fragment_02 onStop</span><br><span class="line">Fragment_03 onStop</span><br><span class="line">Fragment_01 onDestroyView</span><br><span class="line">Fragment_01 onDestroy</span><br><span class="line">Fragment_01 onDetach</span><br><span class="line">Fragment_02 onDestroyView</span><br><span class="line">Fragment_02 onDestroy</span><br><span class="line">Fragment_02 onDetach</span><br><span class="line">Fragment_03 onDestroyView</span><br><span class="line">Fragment_03 onDestroy</span><br><span class="line">Fragment_03 onDetach</span><br></pre></td></tr></table></figure>
+<p>根据上面的生命周期所示，通过add()+hide()+show()方式实现的Fragmnet切换，不可见的Fragment并不会销毁。</p>
+<p><strong>2.使用replace()来实现Fragment界面的切换</strong>,实现代码如下并打印生命周期日志:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"> FragmentManager fragmentManager = getSupportFragmentManager();</span><br><span class="line">        FragmentTransaction ft = fragmentManager.beginTransaction();</span><br><span class="line">        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);</span><br><span class="line"><span class="comment">//        ft.addToBackStack(null);</span></span><br><span class="line">        ft.add(R.id.nav_host_fragment, <span class="keyword">new</span> FirstFragment());</span><br><span class="line">        ft.commit();</span><br><span class="line"></span><br><span class="line">        navView.setOnNavigationItemSelectedListener(<span class="keyword">new</span> BottomNavigationView.OnNavigationItemSelectedListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public boolean <span class="function"><span class="title">onNavigationItemSelected</span>(<span class="params">@NonNull MenuItem menuItem</span>)</span> &#123;</span><br><span class="line">                <span class="keyword">switch</span> (menuItem.getItemId()) &#123;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_user:</span><br><span class="line">                        switchContent( <span class="keyword">new</span> FirstFragment());</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_room:</span><br><span class="line">                        switchContent(<span class="keyword">new</span> SecondFragment());</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_setting:</span><br><span class="line">                        switchContent(<span class="keyword">new</span> ThirdFragment());</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public <span class="keyword">void</span> <span class="function"><span class="title">switchContent</span>(<span class="params">Fragment to</span>)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (currentFragment != to) &#123;</span><br><span class="line">            currentFragment = to;</span><br><span class="line">            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();</span><br><span class="line">            transaction.replace(R.id.nav_host_fragment, to);</span><br><span class="line"><span class="comment">//            transaction.addToBackStack(null);//会将Fragment添加到回退栈中</span></span><br><span class="line">            transaction.commitAllowingStateLoss();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>默认先打开Fragment_01,并依次切换Fragment_01-&gt;Fragment_02-&gt;Fragment_03-&gt;Fragment_01，最后关闭Activity</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">打开默认第一个界面Fragment_01</span><br><span class="line">Fragment_01 onAttach</span><br><span class="line">Fragment_01 onCreate</span><br><span class="line">Fragment_01 onCreateView</span><br><span class="line">Fragment_01 onStart</span><br><span class="line">Fragment_01 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_02界面</span><br><span class="line">Fragment_02 onAttach</span><br><span class="line">Fragment_02 onCreate</span><br><span class="line">Fragment_01 onPause</span><br><span class="line">Fragment_01 onStop</span><br><span class="line">Fragment_01 onDestroyView</span><br><span class="line">Fragment_01 onDestroy</span><br><span class="line">Fragment_01 onDetach</span><br><span class="line">Fragment_02 onCreateView</span><br><span class="line">Fragment_02 onStart</span><br><span class="line">Fragment_02 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_03界面</span><br><span class="line">Fragment_03 onAttach</span><br><span class="line">Fragment_03 onCreate</span><br><span class="line">Fragment_02 onPause</span><br><span class="line">Fragment_02 onStop</span><br><span class="line">Fragment_02 onDestroyView</span><br><span class="line">Fragment_02 onDestroy</span><br><span class="line">Fragment_02 onDetach</span><br><span class="line">Fragment_03 onCreateView</span><br><span class="line">Fragment_03 onStart</span><br><span class="line">Fragment_03 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_01界面</span><br><span class="line">Fragment_01 onAttach</span><br><span class="line">Fragment_01 onCreate</span><br><span class="line">Fragment_03 onPause</span><br><span class="line">Fragment_03 onStop</span><br><span class="line">Fragment_03 onDestroyView</span><br><span class="line">Fragment_03 onDestroy</span><br><span class="line">Fragment_03 onDetach</span><br><span class="line">Fragment_01 onCreateView</span><br><span class="line">Fragment_01 onStart</span><br><span class="line">Fragment_01 onResume</span><br><span class="line"></span><br><span class="line">关闭Activity</span><br><span class="line">Fragment_01 onPause</span><br><span class="line">Fragment_01 onStop</span><br><span class="line">Fragment_01 onDestroyView</span><br><span class="line">Fragment_01 onDestroy</span><br><span class="line">Fragment_01 onDetach</span><br></pre></td></tr></table></figure>
+<p>replace()方法实质是通过内部调用remove()和add()来实现Fragment的修改；通过这种方式切换界面，会销毁不可见的Fragment，重新创建当前的Fragmnent，虽然Fragment也是在可见时加载数据，当时会导致数据多次加载，浪费资源。</p>
+<h2 id="使用ViewPager实现标签栏页面切换"><a href="#使用ViewPager实现标签栏页面切换" class="headerlink" title="使用ViewPager实现标签栏页面切换"></a>使用ViewPager实现标签栏页面切换</h2><p>Viewpager的Adapter有两种:FragmentPagerAdapter和FragmentStatePagerAdapter。下面看一下这两种Adapter的区别：</p>
+<p><strong>1.FragmentPagerAdapter</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">FragmentManager fragmentManager = getSupportFragmentManager();</span><br><span class="line">        FragmentTransaction ft = fragmentManager.beginTransaction();</span><br><span class="line"><span class="comment">//        ft.addToBackStack(null);</span></span><br><span class="line">        list.add(<span class="keyword">new</span> FirstFragment());</span><br><span class="line">        list.add(<span class="keyword">new</span> SecondFragment());</span><br><span class="line">        list.add(<span class="keyword">new</span> ThirdFragment());</span><br><span class="line"></span><br><span class="line">        FragmentPagerAdapter fragmentPagerAdapter = <span class="keyword">new</span> <span class="function"><span class="title">FragmentPagerAdapter</span>(<span class="params">getSupportFragmentManager()</span>)</span> &#123;</span><br><span class="line">            @NonNull</span><br><span class="line">            @Override</span><br><span class="line">            public Fragment <span class="function"><span class="title">getItem</span>(<span class="params">int position</span>)</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> list.get(position);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public int <span class="function"><span class="title">getCount</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> list.size();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        viewPager.setAdapter(fragmentPagerAdapter);</span><br><span class="line"><span class="comment">//        viewPager.setOffscreenPageLimit(2); //预加载剩下两页</span></span><br><span class="line">        </span><br><span class="line">        navView.setOnNavigationItemSelectedListener(<span class="keyword">new</span> BottomNavigationView.OnNavigationItemSelectedListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public boolean <span class="function"><span class="title">onNavigationItemSelected</span>(<span class="params">@NonNull MenuItem menuItem</span>)</span> &#123;</span><br><span class="line">                <span class="keyword">switch</span> (menuItem.getItemId()) &#123;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_user:</span><br><span class="line">                        viewPager.setCurrentItem(<span class="number">0</span>);</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_room:</span><br><span class="line">                        viewPager.setCurrentItem(<span class="number">1</span>);</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_setting:</span><br><span class="line">                        viewPager.setCurrentItem(<span class="number">2</span>);</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br></pre></td></tr></table></figure>
+<p>默认先打开Fragment_01,并依次切换Fragment_01-&gt;Fragment_02-&gt;Fragment_03-&gt;Fragment_01，最后关闭Activity</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">打开默认第一个界面Fragment_01</span><br><span class="line">Fragment_01 onAttach</span><br><span class="line">Fragment_01 onCreate</span><br><span class="line">Fragment_02 onAttach</span><br><span class="line">Fragment_02 onCreate</span><br><span class="line">Fragment_01 onCreateView</span><br><span class="line">Fragment_01 onStart</span><br><span class="line">Fragment_01 onResume</span><br><span class="line">Fragment_02 onCreateView</span><br><span class="line">Fragment_02 onStart</span><br><span class="line">Fragment_02 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_02界面</span><br><span class="line">Fragment_03 onAttach</span><br><span class="line">Fragment_03 onCreate</span><br><span class="line">Fragment_03 onCreateView</span><br><span class="line">Fragment_03 onStart</span><br><span class="line">Fragment_03 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_03界面</span><br><span class="line">Fragment_01 onPause</span><br><span class="line">Fragment_01 onStop</span><br><span class="line">Fragment_01 onDestroyView</span><br><span class="line"></span><br><span class="line">切换到Fragment_01界面</span><br><span class="line">Fragment_01 onCreateView</span><br><span class="line">Fragment_01 onStart</span><br><span class="line">Fragment_01 onResume</span><br><span class="line">Fragment_03 onPause</span><br><span class="line">Fragment_03 onStop</span><br><span class="line">Fragment_03 onDestroyView</span><br><span class="line"></span><br><span class="line">关闭Activity</span><br><span class="line">Fragment_02 onPause</span><br><span class="line">Fragment_01 onPause</span><br><span class="line">Fragment_02 onStop</span><br><span class="line">Fragment_01 onStop</span><br><span class="line">Fragment_02 onDestroyView</span><br><span class="line">Fragment_02 onDestroy</span><br><span class="line">Fragment_02 onDetach</span><br><span class="line">Fragment_01 onDestroyView</span><br><span class="line">Fragment_01 onDestroy</span><br><span class="line">Fragment_01 onDetach</span><br><span class="line">Fragment_03 onDestroy</span><br><span class="line">Fragment_03 onDetach</span><br></pre></td></tr></table></figure>
+<p>通过FragmentPagerAdapter方式，销毁Fragment时只是销毁了Fragment的视图，并没有执行onDestory()方法。</p>
+<p><strong>2.FragmentStatePagerAdapter</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"> FragmentManager fragmentManager = getSupportFragmentManager();</span><br><span class="line">        FragmentTransaction ft = fragmentManager.beginTransaction();</span><br><span class="line"><span class="comment">//        ft.addToBackStack(null);</span></span><br><span class="line">        list.add(<span class="keyword">new</span> FirstFragment());</span><br><span class="line">        list.add(<span class="keyword">new</span> SecondFragment());</span><br><span class="line">        list.add(<span class="keyword">new</span> ThirdFragment());</span><br><span class="line"></span><br><span class="line">        FragmentStatePagerAdapter fragmentPagerAdapter = <span class="keyword">new</span> <span class="function"><span class="title">FragmentStatePagerAdapter</span>(<span class="params">getSupportFragmentManager()</span>)</span> &#123;</span><br><span class="line">            @NonNull</span><br><span class="line">            @Override</span><br><span class="line">            public Fragment <span class="function"><span class="title">getItem</span>(<span class="params">int position</span>)</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> list.get(position);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            @Override</span><br><span class="line">            public int <span class="function"><span class="title">getCount</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> list.size();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">        viewPager.setAdapter(fragmentPagerAdapter);</span><br><span class="line"><span class="comment">//        viewPager.setOffscreenPageLimit(2); //预加载剩下两页</span></span><br><span class="line"></span><br><span class="line">        navView.setOnNavigationItemSelectedListener(<span class="keyword">new</span> BottomNavigationView.OnNavigationItemSelectedListener() &#123;</span><br><span class="line">            @Override</span><br><span class="line">            public boolean <span class="function"><span class="title">onNavigationItemSelected</span>(<span class="params">@NonNull MenuItem menuItem</span>)</span> &#123;</span><br><span class="line">                <span class="keyword">switch</span> (menuItem.getItemId()) &#123;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_user:</span><br><span class="line">                        viewPager.setCurrentItem(<span class="number">0</span>);</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_room:</span><br><span class="line">                        viewPager.setCurrentItem(<span class="number">1</span>);</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                    <span class="keyword">case</span> R.id.navigation_setting:</span><br><span class="line">                        viewPager.setCurrentItem(<span class="number">2</span>);</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br></pre></td></tr></table></figure>
+<p>默认先打开Fragment_01,并依次切换Fragment_01-&gt;Fragment_02-&gt;Fragment_03-&gt;Fragment_01，最后关闭Activity</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">打开默认第一个界面Fragment_01</span><br><span class="line">Fragment_01 onAttach</span><br><span class="line">Fragment_01 onCreate</span><br><span class="line">Fragment_02 onAttach</span><br><span class="line">Fragment_02 onCreate</span><br><span class="line">Fragment_01 onCreateView</span><br><span class="line">Fragment_01 onStart</span><br><span class="line">Fragment_01 onResume</span><br><span class="line">Fragment_02 onCreateView</span><br><span class="line">Fragment_02 onStart</span><br><span class="line">Fragment_02 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_02界面</span><br><span class="line">Fragment_03 onAttach</span><br><span class="line">Fragment_03 onCreate</span><br><span class="line">Fragment_03 onCreateView</span><br><span class="line">Fragment_03 onStart</span><br><span class="line">Fragment_03 onResume</span><br><span class="line"></span><br><span class="line">切换到Fragment_03界面</span><br><span class="line">Fragment_01 onPause</span><br><span class="line">Fragment_01 onStop</span><br><span class="line">Fragment_01 onDestroyView</span><br><span class="line">Fragment_01 onDestroy</span><br><span class="line">Fragment_01 onDetach</span><br><span class="line"></span><br><span class="line">切换到Fragment_01界面</span><br><span class="line">Fragment_01 onAttach</span><br><span class="line">Fragment_01 onCreate</span><br><span class="line">Fragment_01 onCreateView</span><br><span class="line">Fragment_01 onStart</span><br><span class="line">Fragment_01 onResume</span><br><span class="line">Fragment_03 onPause</span><br><span class="line">Fragment_03 onStop</span><br><span class="line">Fragment_03 onDestroyView</span><br><span class="line">Fragment_03 onDestroy</span><br><span class="line">Fragment_03 onDetach</span><br><span class="line"></span><br><span class="line">关闭Activity</span><br><span class="line">Fragment_02 onPause</span><br><span class="line">Fragment_01 onPause</span><br><span class="line">Fragment_02 onStop</span><br><span class="line">Fragment_01 onStop</span><br><span class="line">Fragment_02 onDestroyView</span><br><span class="line">Fragment_02 onDestroy</span><br><span class="line">Fragment_02 onDetach</span><br><span class="line">Fragment_01 onDestroyView</span><br><span class="line">Fragment_01 onDestroy</span><br><span class="line">Fragment_01 onDetach</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>通过FragmentStatePagerAdapter方式，销毁Fragment时不仅销毁了Fragment的视图，还销毁了Fragment对象，执行了onDestory()和onDetach()</p>
+<blockquote>
+<p>上述几种方式，要根据实际情况选择使用</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://gitee.com/jags/FragmentLoad.git">项目地址</a></p>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2020/06/10/如何搭建代理服务器/" data-toggle="tooltip" data-placement="top" title="如何搭建代理服务器">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2020/04/13/Retrofit2原理解析/" data-toggle="tooltip" data-placement="top" title="Retrofit2原理解析">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Java" title="Java">Java</a>
+                        
+                          <a class="tag" href="/tags/#Android" title="Android">Android</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://j-a-g.github.io/2020/05/01/Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/";
+    var disqus_url = "https://j-a-g.github.io/2020/05/01/Fragment%E6%87%92%E5%8A%A0%E8%BD%BD/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; JAG&#39;s Blog 2022 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="https://github.com/Kaijun/hexo-theme-huxblog">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="https://github.com/J-a-g/J-a-g.github.io">JAG</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=J-a-g&J-a-g.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://j-a-g.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

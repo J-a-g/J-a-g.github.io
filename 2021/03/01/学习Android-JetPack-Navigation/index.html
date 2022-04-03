@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>
+        
+          学习Android Jetpack: Navigation - JAG的博客 | JAG&#39;s Blog
+        
+    </title>
+
+    <link rel="canonical" href="https://j-a-g.github.io/2021/03/01/学习Android-JetPack-Navigation/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS -->
+    
+<link rel="stylesheet" href="/css/hux-blog.min.css">
+
+
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.3.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">JAG&#39;s Blog</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archives/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    
+<!-- Image to hack wechat -->
+<!-- <img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="{{ site.baseurl }}/{% if page.header-img %}{{ page.header-img }}{% else %}{{ site.header-img }}{% endif %}" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        background-image: url('post-bg-unix-linux.jpg')
+    }
+</style>
+<header class="intro-header" >
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                          <a class="tag" href="/tags/#Android JetPack" title="Android JetPack">Android JetPack</a>
+                        
+                    </div>
+                    <h1>学习Android Jetpack: Navigation</h1>
+                    <h2 class="subheading"></h2>
+                    <span class="meta">
+                        Posted by Chengjian Su on
+                        2021-03-01
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>Navigation 是一个框架，用于在 Android 应用中的“目标位置”之间导航。该框架提供一致的 API，无论目标位置是作为 Fragment、Activity 还是其他组件实现的。</p>
+</blockquote>
+<p>本文讲会从三个步骤去深入了解Navigation，使用Navigation、理解Navigation、解析Navigation,由于篇幅问题解析Navigation在单独一篇</p>
+<h2 id="官方文档"><a href="#官方文档" class="headerlink" title="官方文档"></a>官方文档</h2><p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/googlecodelabs/android-navigation">https://github.com/googlecodelabs/android-navigation</a><br>项目教程：<a target="_blank" rel="noopener" href="https://codelabs.developers.google.com/codelabs/android-navigation/#0">https://codelabs.developers.google.com/codelabs/android-navigation/#0</a></p>
+<h2 id="Sameple展示"><a href="#Sameple展示" class="headerlink" title="Sameple展示"></a>Sameple展示</h2><p>自己实现的Navigation的Sample，它的效果大概是这样：<br><img src="ezgif.com-gif-maker.gif" alt="java-javascript"><br>基本的Fragment跳转场景，以及Fragment的导航栏使用场景<br>项目地址：<a target="_blank" rel="noopener" href="https://github.com/J-a-g/GunDom/tree/navigation">https://github.com/J-a-g/GunDom/tree/navigation</a></p>
+<h2 id="使用Navigation"><a href="#使用Navigation" class="headerlink" title="使用Navigation"></a>使用Navigation</h2><blockquote>
+<p>无论是否认可，我们都必须承认，Google已经在尝试让Kotlin上位，无论是今年IO大会的 数据展示，还是官方文档上的 代码示例片段，亦或是Google最新 开源Demo的源码，使用语言清一色 Kotlin，本文亦然。</p>
+</blockquote>
+<p><strong>1. 在build.gradle中添加以下依赖</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    <span class="comment">//Navigation</span></span><br><span class="line">    implementation <span class="string">&quot;androidx.navigation:navigation-fragment-ktx:$rootProject.navigationVersion&quot;</span></span><br><span class="line">    implementation <span class="string">&quot;androidx.navigation:navigation-ui-ktx:$rootProject.navigationVersion&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>如需将 Safe Args 添加到您的项目中，请在顶层 build.gradle 文件中包含以下 classpath：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        def nav_version = <span class="string">&quot;2.3.5&quot;</span></span><br><span class="line">        classpath <span class="string">&quot;androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>请将以下行添加到应用或模块的 build.gradle 文件中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: <span class="string">&quot;androidx.navigation.safeargs&quot;</span></span><br></pre></td></tr></table></figure>
+<p><strong>2.新建Fragment</strong><br>我的Sample中新建了如下的几个Fragment<br><img src="fragments.jpg" alt="java-javascript"><br>其中login包下的Fragment是跳转场景应用，main包下的Fragment是导航栏的应用</p>
+<p><strong>3.新建导航文件</strong><br><img src="navigation_xml.jpg" alt="java-javascript"></p>
+<p><img src="navigation.jpg" alt="java-javascript"><br>当然不是新建后就是这样，来看一下对应的xml内容</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span>?&gt;</span><br><span class="line">&lt;navigation xmlns:android=<span class="string">&quot;http://schemas.android.com/apk/res/android&quot;</span></span><br><span class="line">    xmlns:app=<span class="string">&quot;http://schemas.android.com/apk/res-auto&quot;</span></span><br><span class="line">    xmlns:tools=<span class="string">&quot;http://schemas.android.com/tools&quot;</span></span><br><span class="line">    android:id=<span class="string">&quot;@+id/login_navigation&quot;</span></span><br><span class="line">    app:startDestination=<span class="string">&quot;@id/welcome&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/login&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;com.yin.mvvmdemo.fragments.login.LoginFragment&quot;</span></span><br><span class="line">        android:label=<span class="string">&quot;LoginFragment&quot;</span></span><br><span class="line">        tools:layout=<span class="string">&quot;@layout/fragment_login&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/welcome&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;com.yin.mvvmdemo.fragments.login.WelComeFragment&quot;</span></span><br><span class="line">        android:label=<span class="string">&quot;WelComeFragment&quot;</span></span><br><span class="line">        tools:layout=<span class="string">&quot;@layout/fragment_welcome&quot;</span>&gt;</span><br><span class="line">        &lt;action</span><br><span class="line">            android:id=<span class="string">&quot;@+id/action_welcome_to_login&quot;</span></span><br><span class="line">            app:destination=<span class="string">&quot;@id/login&quot;</span> /&gt;</span><br><span class="line">        &lt;action</span><br><span class="line">            android:id=<span class="string">&quot;@+id/action_welcome_to_register&quot;</span></span><br><span class="line">            app:destination=<span class="string">&quot;@id/register&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">        &lt;!--		app:enterAnim=<span class="string">&quot;@anim/slide_in_right&quot;</span>--&gt;</span><br><span class="line">        &lt;!--		app:exitAnim=<span class="string">&quot;@anim/slide_out_left&quot;</span>--&gt;</span><br><span class="line">        &lt;!--		app:popEnterAnim=<span class="string">&quot;@anim/slide_in_left&quot;</span>--&gt;</span><br><span class="line">        &lt;!--		app:popExitAnim=<span class="string">&quot;@anim/slide_out_right&quot;</span>--&gt;</span><br><span class="line">    &lt;/fragment&gt;</span><br><span class="line"></span><br><span class="line">    &lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/register&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;com.yin.mvvmdemo.fragments.login.RegistFragment&quot;</span></span><br><span class="line">        android:label=<span class="string">&quot;RegistFragment&quot;</span></span><br><span class="line">        tools:layout=<span class="string">&quot;@layout/fragment_regist&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line">        &lt;action</span><br><span class="line">            android:id=<span class="string">&quot;@+id/action_register_to_register_next&quot;</span></span><br><span class="line">            app:destination=<span class="string">&quot;@id/register_next&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">        &lt;argument</span><br><span class="line">            android:name=<span class="string">&quot;EMAIL&quot;</span></span><br><span class="line">            android:defaultValue=<span class="string">&quot;2005@qq.com&quot;</span></span><br><span class="line">            app:argType=<span class="string">&quot;string&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">        &lt;argument</span><br><span class="line">            android:name=<span class="string">&quot;myarg&quot;</span></span><br><span class="line">            android:defaultValue=<span class="string">&quot;Android!&quot;</span> /&gt;</span><br><span class="line">        &lt;!-- TODO STEP <span class="number">11.1</span> - Add a deep link to www.example.com/&#123;myarg&#125;/ --&gt;</span><br><span class="line"></span><br><span class="line">        &lt;deepLink app:uri=<span class="string">&quot;www.example.com/&#123;myarg&#125;&quot;</span> /&gt;</span><br><span class="line">    &lt;/fragment&gt;</span><br><span class="line"></span><br><span class="line">    &lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/register_next&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;com.yin.mvvmdemo.fragments.login.RegistNextFragment&quot;</span></span><br><span class="line">        android:label=<span class="string">&quot;RegistNextFragment&quot;</span></span><br><span class="line">        tools:layout=<span class="string">&quot;@layout/fragment_regist_next&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line">        &lt;action</span><br><span class="line">            android:id=<span class="string">&quot;@+id/action_regist_next_to_welcome&quot;</span></span><br><span class="line">            app:destination=<span class="string">&quot;@id/welcome&quot;</span></span><br><span class="line">            app:popUpTo=<span class="string">&quot;@id/welcome&quot;</span></span><br><span class="line">            app:popUpToInclusive=<span class="string">&quot;true&quot;</span> /&gt;</span><br><span class="line">    &lt;/fragment&gt;</span><br><span class="line">&lt;/navigation&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>4.编辑LoginActivity</strong><br>在Activity中配置<strong>Navigation</strong>非常简单，我们首先编辑Activity的布局文件，并在布局文件中添加一个<strong>NavHostFragment</strong>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span>?&gt;</span><br><span class="line">&lt;androidx.constraintlayout.widget.ConstraintLayout xmlns:android=<span class="string">&quot;http://schemas.android.com/apk/res/android&quot;</span></span><br><span class="line">    xmlns:app=<span class="string">&quot;http://schemas.android.com/apk/res-auto&quot;</span></span><br><span class="line">    android:layout_width=<span class="string">&quot;match_parent&quot;</span></span><br><span class="line">    android:layout_height=<span class="string">&quot;match_parent&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/my_nav_host_fragment&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;androidx.navigation.fragment.NavHostFragment&quot;</span></span><br><span class="line">        android:layout_width=<span class="string">&quot;match_parent&quot;</span></span><br><span class="line">        android:layout_height=<span class="string">&quot;match_parent&quot;</span></span><br><span class="line">        app:defaultNavHost=<span class="string">&quot;true&quot;</span></span><br><span class="line">        app:navGraph=<span class="string">&quot;@navigation/login_navigation&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">&lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">class LoginActivity : AppCompatActivity() &#123;</span><br><span class="line"></span><br><span class="line">    override fun <span class="function"><span class="title">onCreate</span>(<span class="params">savedInstanceState: Bundle?</span>)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>.onCreate(savedInstanceState)</span><br><span class="line">        setContentView(R.layout.activity_login)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>5.配置Fragment的跳转事件</strong></p>
+<p>这里有这几种常见跳转场景：<br>(1). 普通跳转,WelComeFragment-&gt;LoginFragment<br>(2). 跳转并传值给下一个界面，WelComeFragment-&gt;RegistFragment<br>(3). 返回上一个界面，WelComeFragment&lt;-RegistFragment<br>(4). 指定向上导航,即WelComeFragment-&gt;RegistFragment-&gt;RegistNextFragment,RegistNextFragment不经过RegistFragment直接回到WelComeFragment界面，是不是有点Activity&emsp;singTask启动模式的意思</p>
+<p>介绍完常见的几种跳转场景，我们配置nanavigation.xml中的action，跳转正是根据action的配置，才能知道要跳转到那个界面，配置如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/welcome&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;com.yin.mvvmdemo.fragments.login.WelComeFragment&quot;</span></span><br><span class="line">        android:label=<span class="string">&quot;WelComeFragment&quot;</span></span><br><span class="line">        tools:layout=<span class="string">&quot;@layout/fragment_welcome&quot;</span>&gt;</span><br><span class="line">        &lt;action</span><br><span class="line">            android:id=<span class="string">&quot;@+id/action_welcome_to_login&quot;</span></span><br><span class="line">            app:destination=<span class="string">&quot;@id/login&quot;</span> /&gt;</span><br><span class="line">        &lt;action</span><br><span class="line">            android:id=<span class="string">&quot;@+id/action_welcome_to_register&quot;</span></span><br><span class="line">            app:destination=<span class="string">&quot;@id/register&quot;</span></span><br><span class="line">            app:enterAnim=<span class="string">&quot;@anim/slide_in_right&quot;</span></span><br><span class="line">            app:exitAnim=<span class="string">&quot;@anim/slide_out_left&quot;</span></span><br><span class="line">            app:popEnterAnim=<span class="string">&quot;@anim/slide_in_left&quot;</span></span><br><span class="line">            app:popExitAnim=<span class="string">&quot;@anim/slide_out_right&quot;</span> /&gt;</span><br><span class="line">    &lt;/fragment&gt;</span><br></pre></td></tr></table></figure>
+<p>app:destination对应的就是跳转的目标，同时也可以在action中配置跳转的动画，下面看一下如何实现上面提到的几种跳转场景，前提以及配置了action，</p>
+<p><strong>(1). 普通跳转</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">val options = navOptions &#123;</span><br><span class="line">          anim &#123;</span><br><span class="line">              enter = R.anim.slide_in_right</span><br><span class="line">              exit = R.anim.slide_out_left</span><br><span class="line">              popEnter = R.anim.slide_in_left</span><br><span class="line">              popExit = R.anim.slide_out_right</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      view.findViewById&lt;Button&gt;(R.id.btn_login).setOnClickListener &#123;</span><br><span class="line">      	<span class="comment">//R.id.login就action id，并且跳转动画也可以在options中进行设置</span></span><br><span class="line">          findNavController().navigate(R.id.login, <span class="literal">null</span>, options)</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>(2). 跳转并传值给下一个界面</strong><br>先看一下navigation.xml中的配置,在看一下如何进行传值</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">&lt;fragment</span><br><span class="line">       android:id=<span class="string">&quot;@+id/register&quot;</span></span><br><span class="line">       android:name=<span class="string">&quot;com.yin.mvvmdemo.fragments.login.RegistFragment&quot;</span></span><br><span class="line">       android:label=<span class="string">&quot;RegistFragment&quot;</span></span><br><span class="line">       tools:layout=<span class="string">&quot;@layout/fragment_regist&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line">       &lt;action</span><br><span class="line">           android:id=<span class="string">&quot;@+id/action_register_to_register_next&quot;</span></span><br><span class="line">           app:destination=<span class="string">&quot;@id/register_next&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">       &lt;argument</span><br><span class="line">           android:name=<span class="string">&quot;EMAIL&quot;</span></span><br><span class="line">           android:defaultValue=<span class="string">&quot;2005@qq.com&quot;</span></span><br><span class="line">           app:argType=<span class="string">&quot;string&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">       &lt;argument</span><br><span class="line">           android:name=<span class="string">&quot;myarg&quot;</span></span><br><span class="line">           android:defaultValue=<span class="string">&quot;Android!&quot;</span> /&gt;</span><br><span class="line">       &lt;!-- TODO STEP <span class="number">11.1</span> - Add a deep link to www.example.com/&#123;myarg&#125;/ --&gt;</span><br><span class="line"></span><br><span class="line">       &lt;deepLink app:uri=<span class="string">&quot;www.example.com/&#123;myarg&#125;&quot;</span> /&gt;</span><br><span class="line">   &lt;/fragment&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">   <span class="comment">//第一种方式：传值为navigation.xml中argument的配置</span></span><br><span class="line">   view.findViewById&lt;Button&gt;(R.id.btn_register).setOnClickListener &#123;</span><br><span class="line">           val action = WelComeFragmentDirections.actionWelcomeToRegister().setMyarg(<span class="string">&quot;suchengjian&quot;</span>).setEMAIL(<span class="string">&quot;1090@qq.com&quot;</span>)</span><br><span class="line">           findNavController().navigate(action)</span><br><span class="line">       &#125;</span><br><span class="line">      <span class="comment">//第二种：传值为bean对象</span></span><br><span class="line">       view.findViewById&lt;Button&gt;(R.id.btn_register).setOnClickListener &#123;</span><br><span class="line">           val bundle = Bundle()</span><br><span class="line">           bundle.putString(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;sudaqiang&quot;</span>)</span><br><span class="line">           bundle.putString(<span class="string">&quot;sex&quot;</span>, <span class="string">&quot;man&quot;</span>)</span><br><span class="line">           bundle.putParcelable(<span class="string">&quot;user&quot;</span>, User(<span class="string">&quot;苏大强&quot;</span>, <span class="string">&quot;1&quot;</span>, <span class="string">&quot;60&quot;</span>))</span><br><span class="line">           findNavController().navigate(R.id.action_welcome_to_register, bundle)</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">      <span class="comment">//解析传过来的值</span></span><br><span class="line">       val safeArgs: RegistFragmentArgs by navArgs()</span><br><span class="line">       val text = safeArgs.email + <span class="string">&quot;:&quot;</span> + safeArgs.myarg <span class="comment">//对应的是第一种传值方式</span></span><br><span class="line">       tv.setText(text)</span><br><span class="line">       etEmail.setText(safeArgs.email)</span><br><span class="line">       </span><br><span class="line">       <span class="comment">//对应第二种传值方式</span></span><br><span class="line">       val name = <span class="built_in">arguments</span>?.getString(<span class="string">&quot;name&quot;</span>)</span><br><span class="line">       val sex = <span class="built_in">arguments</span>?.getString(<span class="string">&quot;sex&quot;</span>)</span><br><span class="line">       val user: User? = <span class="built_in">arguments</span>?.getParcelable&lt;User&gt;(<span class="string">&quot;user&quot;</span>)</span><br><span class="line">       Log.w(<span class="string">&quot;scj&quot;</span>, <span class="string">&quot;===&gt;&quot;</span> + name + <span class="string">&quot;:&quot;</span> + sex + <span class="string">&quot;:&quot;</span> + user.toString())   </span><br></pre></td></tr></table></figure>
+<p><strong>(3). 返回上一个界面</strong><br>这个比较简单：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">view.findViewById&lt;TextView&gt;(R.id.tv_cancel).setOnClickListener &#123;</span><br><span class="line">            Navigation.findNavController(it).navigateUp()</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<p><strong>(4). 指定向上导航</strong><br>主要是action中配置app:popUpTo，app:popUpToInclusive</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/register_next&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;com.yin.mvvmdemo.fragments.login.RegistNextFragment&quot;</span></span><br><span class="line">        android:label=<span class="string">&quot;RegistNextFragment&quot;</span></span><br><span class="line">        tools:layout=<span class="string">&quot;@layout/fragment_regist_next&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line">        &lt;action</span><br><span class="line">            android:id=<span class="string">&quot;@+id/action_regist_next_to_welcome&quot;</span></span><br><span class="line">            app:destination=<span class="string">&quot;@id/welcome&quot;</span></span><br><span class="line">            app:popUpTo=<span class="string">&quot;@id/welcome&quot;</span></span><br><span class="line">            app:popUpToInclusive=<span class="string">&quot;true&quot;</span> /&gt;</span><br><span class="line">    &lt;/fragment&gt;</span><br><span class="line"></span><br><span class="line">    view.findViewById&lt;Button&gt;(R.id.btn_finish_sign_up).setOnClickListener &#123;</span><br><span class="line">            findNavController().navigate(R.id.action_regist_next_to_welcome, <span class="literal">null</span>)</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="理解Navigation"><a href="#理解Navigation" class="headerlink" title="理解Navigation"></a>理解Navigation</h2><p>通过上面的代码，我们已经实现了Fragment的导航，接下来我的了解一下每个类的职责，理解一下框架的设计思想</p>
+<p><strong>1.NavHostFragment 导航界面容器</strong></p>
+<p>想展示一个Fragment，我们首先要定义一个容器去承载它，实际上NavHostFragment内部是实例化了一个FrameLayout，用于导航和显示Fragment，看一下NavHostFragment的onCreateView()方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">@Nullable</span><br><span class="line">    @Override</span><br><span class="line">    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,</span><br><span class="line">                             @Nullable Bundle savedInstanceState) &#123;</span><br><span class="line">        FrameLayout frameLayout = <span class="keyword">new</span> FrameLayout(inflater.getContext());</span><br><span class="line">        <span class="comment">// When added via XML, this has no effect (since this FrameLayout is given the ID</span></span><br><span class="line">        <span class="comment">// automatically), but this ensures that the View exists as part of this Fragment&#x27;s View</span></span><br><span class="line">        <span class="comment">// hierarchy in cases where the NavHostFragment is added programmatically as is required</span></span><br><span class="line">        <span class="comment">// for child fragment transactions</span></span><br><span class="line">        frameLayout.setId(getId());</span><br><span class="line">        <span class="keyword">return</span> frameLayout;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="comment">//activity_login.xml</span></span><br><span class="line">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span>?&gt;</span><br><span class="line">&lt;androidx.constraintlayout.widget.ConstraintLayout xmlns:android=<span class="string">&quot;http://schemas.android.com/apk/res/android&quot;</span></span><br><span class="line">    xmlns:app=<span class="string">&quot;http://schemas.android.com/apk/res-auto&quot;</span></span><br><span class="line">    android:layout_width=<span class="string">&quot;match_parent&quot;</span></span><br><span class="line">    android:layout_height=<span class="string">&quot;match_parent&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/my_nav_host_fragment&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;androidx.navigation.fragment.NavHostFragment&quot;</span></span><br><span class="line">        android:layout_width=<span class="string">&quot;match_parent&quot;</span></span><br><span class="line">        android:layout_height=<span class="string">&quot;match_parent&quot;</span></span><br><span class="line">        app:defaultNavHost=<span class="string">&quot;true&quot;</span></span><br><span class="line">        app:navGraph=<span class="string">&quot;@navigation/login_navigation&quot;</span> /&gt;</span><br><span class="line"></span><br><span class="line">&lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意一下这两个属性，<br>app:defaultNavHost=”true”<br>app:navGraph=”@navigation/login_navigation” </p>
+</blockquote>
+<p>app:defaultNavHost=”true” 此属性可确保您NavHostFragment拦截系统返回按钮也可以重写AppCompatActivity.onSupportNavigateUp()方法<br>app:navGraph=”@navigation/login_navigation” 这个属性它会指向一个login_navigation.xml文件,NavHostFragment就会导航并展示对应的Fragment。</p>
+<p><strong>2.navigation.xml: 声明导航结构</strong></p>
+<p>指的就是res/navigation/**.xml文件，就是上面的app:navGraph=”@navigation/login_navigation”</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span>?&gt;</span><br><span class="line">&lt;navigation xmlns:android=<span class="string">&quot;http://schemas.android.com/apk/res/android&quot;</span></span><br><span class="line">    xmlns:app=<span class="string">&quot;http://schemas.android.com/apk/res-auto&quot;</span></span><br><span class="line">    xmlns:tools=<span class="string">&quot;http://schemas.android.com/tools&quot;</span></span><br><span class="line">    android:id=<span class="string">&quot;@+id/login_navigation&quot;</span></span><br><span class="line">    app:startDestination=<span class="string">&quot;@id/welcome&quot;</span>&gt;</span><br><span class="line"></span><br><span class="line">    &lt;fragment</span><br><span class="line">        android:id=<span class="string">&quot;@+id/login&quot;</span></span><br><span class="line">        android:name=<span class="string">&quot;com.yin.mvvmdemo.fragments.login.LoginFragment&quot;</span></span><br><span class="line">        android:label=<span class="string">&quot;LoginFragment&quot;</span></span><br><span class="line">        tools:layout=<span class="string">&quot;@layout/fragment_login&quot;</span> /&gt;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//省略...</span></span><br><span class="line">&lt;/navigation&gt;</span><br></pre></td></tr></table></figure>
+<p>在navigation的节点下有这样一个属性，app:startDestination=”@id/welcome”，意思就是这个导航结构图中第一个显示的界面</p>
+<p><strong>3.Action标签：声明导航行为</strong></p>
+<p>一个简单的action是这样的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;action</span><br><span class="line">    android:id=<span class="string">&quot;@+id/action_welcome_to_login&quot;</span></span><br><span class="line">    app:destination=<span class="string">&quot;@id/login&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
+<p>app:destination声明了这个行为导航的destination（目的地）。这个action的意思，就是我们可以跳转到对应id为login的Fragment界面上，这里就是指LoginFragment<br>android:id就是这个action的唯一标示，在调用跳转是就是通过这个id指向对应的行为，代码中就是这样</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">view.findViewById&lt;Button&gt;(R.id.btn_sign_up).setOnClickListener &#123;</span><br><span class="line">    findNavController().navigate(R.id.action_welcome_to_login, <span class="literal">null</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同时action中可以设置转场动画，如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&lt;action</span><br><span class="line">    android:id=<span class="string">&quot;@+id/action_welcome_to_register&quot;</span></span><br><span class="line">    app:destination=<span class="string">&quot;@id/register&quot;</span></span><br><span class="line">    app:enterAnim=<span class="string">&quot;@anim/slide_in_right&quot;</span></span><br><span class="line">    app:exitAnim=<span class="string">&quot;@anim/slide_out_left&quot;</span></span><br><span class="line">    app:popEnterAnim=<span class="string">&quot;@anim/slide_in_left&quot;</span></span><br><span class="line">    app:popExitAnim=<span class="string">&quot;@anim/slide_out_right&quot;</span> /&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>4.通过代码进行导航</strong></p>
+<p> 整个导航行为其实是通过Navigation进行处理，可以说是一个重要的核心类，我们通过获取 NavController，然后调用 NavController.navigate()方法进行导航。</p>
+<p> 通过传入ActionId，指定对应的导航行为；同时可以通过传入Bundle以数据传递；或者是再传入一个NavOptions配置更多（比如 转场动画，它也可以通过这种方式进行代码的动态配置）。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>Sample中Navigation配合导航栏的时候这里没有说明，直接看项目吧</p>
+<p><strong>参考文章</strong></p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/66b93df4b7a6">即学即用Android Jetpack - Navigation</a><br>还有就是官方文档了~</p>
+</blockquote>
+
+
+                <hr>
+
+                
+
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2021/04/03/学习Android-Jetpack-Databinding/" data-toggle="tooltip" data-placement="top" title="学习Android Jetpack:Databinding">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2021/02/10/时间复杂度与空间复杂度/" data-toggle="tooltip" data-placement="top" title="时间复杂度与空间复杂度">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                
+
+                
+                <!-- disqus 评论框 start -->
+                <div class="comment">
+                    <div id="disqus_thread" class="disqus-thread"></div>
+                </div>
+                <!-- disqus 评论框 end -->
+                
+
+            </div>
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#Android JetPack" title="Android JetPack">Android JetPack</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+            </div>
+
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "hexo-theme-huxblog";
+    var disqus_identifier = "https://j-a-g.github.io/2021/03/01/%E5%AD%A6%E4%B9%A0Android-JetPack-Navigation/";
+    var disqus_url = "https://j-a-g.github.io/2021/03/01/%E5%AD%A6%E4%B9%A0Android-JetPack-Navigation/";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; JAG&#39;s Blog 2022 
+                    <br>
+                    Theme by <a target="_blank" rel="noopener" href="https://github.com/Kaijun/hexo-theme-huxblog">Hux</a> 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    Ported by <a target="_blank" rel="noopener" href="https://github.com/J-a-g/J-a-g.github.io">JAG</a> | 
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=J-a-g&J-a-g.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://j-a-g.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="https://j-a-g.github.io/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
